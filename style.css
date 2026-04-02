@@ -199,8 +199,8 @@ body {
 
 /* ===================== HERO / COVER ===================== */
 .hero {
-  /* Tỉ lệ chuẩn 16:9 — ít nhất 560px, tối đa 100vh */
-  height: clamp(560px, 56.25vw, 100vh);
+  height: clamp(200px, 33.33vh, 380px);
+  min-height: 0;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -219,6 +219,26 @@ body {
   background-position: center;
   transition: background-image 0.4s ease;
 }
+
+/* Nút edit ảnh bìa — chỉ hiện khi admin */
+.hero-edit-btn {
+  display: none;
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  z-index: 20;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  border: 1.5px solid rgba(255,255,255,0.3);
+}
+.hero-edit-btn.visible { display: flex; }
+.hero-edit-btn:hover { background: rgba(0,0,0,0.8); transform: scale(1.1); }
 
 /* Lớp tối overlay để chữ dễ đọc */
 .hero-overlay {
@@ -455,6 +475,27 @@ body {
 }
 
 .intro-avatar-placeholder.hidden { display: none; }
+
+/* Nút edit avatar — chỉ hiện khi admin */
+.avatar-edit-btn {
+  display: none;
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s, transform 0.2s;
+  z-index: 5;
+}
+.avatar-edit-btn.visible { display: flex; }
+.avatar-edit-btn:hover { background: rgba(0,0,0,0.85); transform: scale(1.1); }
 
 .intro-text { flex: 1; min-width: 0; }
 
@@ -1390,7 +1431,7 @@ body {
 
 /* ===================== HERO ===================== */
 .hero {
-  min-height: 100vh;
+  min-height: 0;
   background: linear-gradient(165deg,
     #1e192e 0%,
     #2d2540 25%,
@@ -2026,7 +2067,7 @@ body {
 
 /* ===================== HERO ===================== */
 .hero {
-  min-height: 100vh;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3400,6 +3441,133 @@ body.on-subpage .site-header {
 /* 
    EDITOR MODALS
     */
+/* ── Image viewer (fullscreen click any image) ── */
+.img-viewer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  background: rgba(5, 2, 12, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  backdrop-filter: blur(4px);
+}
+.img-viewer-overlay.hidden { display: none; }
+
+.img-viewer-img {
+  max-width: 95vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  user-select: none;
+}
+
+.img-viewer-close {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+  z-index: 6001;
+}
+.img-viewer-close:hover { background: rgba(255,255,255,0.25); transform: rotate(90deg); }
+
+/* Ảnh có thể click sẽ đổi cursor */
+img.img-clickable { cursor: zoom-in; }
+
+/* ── Crop modal ── */
+.crop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(10,5,20,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.crop-overlay.hidden { display: none; }
+
+.crop-modal {
+  background: #1e1530;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+
+.crop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.crop-body {
+  max-height: 60vh;
+  background: #0d0a18;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crop-body img {
+  display: block;
+  max-width: 100%;
+}
+
+.crop-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.7);
+  padding: 8px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-outline:hover { border-color: #fff; color: #fff; }
+
+.btn-primary {
+  background: var(--pink-main);
+  border: none;
+  color: #fff;
+  padding: 8px 22px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.85; }
+
 .editor-overlay {
   position: fixed;
   inset: 0;

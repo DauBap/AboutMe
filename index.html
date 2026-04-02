@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>notphuongthao</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.css" />
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -41,6 +42,11 @@
   <section class="hero" id="hero">
     <!-- Ảnh bìa — đặt qua admin -->
     <div class="hero-cover" id="heroCover"></div>
+    <!-- Nút sửa ảnh bìa (chỉ admin) -->
+    <label class="hero-edit-btn" id="heroCoverEditBtn" title="Đổi ảnh bìa">
+      <i class="fas fa-camera"></i>
+      <input type="file" id="heroCoverFile" accept="image/*" style="display:none" />
+    </label>
     <!-- Lớp overlay mờ -->
     <div class="hero-overlay"></div>
     <!-- Nội dung chính giữa -->
@@ -64,6 +70,10 @@
         <div class="intro-avatar-wrap">
           <img src="" alt="Avatar" id="introAvatar" class="intro-avatar" />
           <div class="intro-avatar-placeholder" id="introAvatarPlaceholder"><i class="fas fa-user"></i></div>
+          <label class="avatar-edit-btn" id="avatarEditBtn" title="Đổi avatar">
+            <i class="fas fa-camera"></i>
+            <input type="file" id="avatarFile" accept="image/*" style="display:none" />
+          </label>
         </div>
 
         <!-- Text -->
@@ -271,6 +281,46 @@
     </div>
   </div>
 
+  <!-- ===================== CROP MODAL ===================== -->
+  <div class="crop-overlay hidden" id="cropOverlay">
+    <div class="crop-modal">
+      <div class="crop-header">
+        <span>Chỉnh sửa ảnh</span>
+        <button class="editor-close" id="cropCancel"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="crop-body">
+        <img id="cropImg" src="" alt="" />
+      </div>
+      <div class="crop-footer">
+        <button class="btn-outline" id="cropCancelBtn">Hủy</button>
+        <button class="btn-primary" id="cropConfirmBtn"><i class="fas fa-check"></i> Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.js"></script>
+  <!-- ===================== IMAGE VIEWER ===================== -->
+  <div class="img-viewer-overlay hidden" id="imgViewerOverlay">
+    <button class="img-viewer-close" id="imgViewerClose"><i class="fas fa-times"></i></button>
+    <img class="img-viewer-img" id="imgViewerImg" src="" alt="" />
+  </div>
+  <div class="crop-overlay hidden" id="cropOverlay">
+    <div class="crop-modal">
+      <div class="crop-header">
+        <span>Chỉnh sửa ảnh</span>
+        <button class="editor-close" id="cropCancel"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="crop-body">
+        <img id="cropImg" src="" alt="" />
+      </div>
+      <div class="crop-footer">
+        <button class="btn-outline" id="cropCancelBtn">Hủy</button>
+        <button class="btn-primary" id="cropConfirmBtn"><i class="fas fa-check"></i> Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="supabase.js"></script>
   <script src="script.js"></script>

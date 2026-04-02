@@ -119,6 +119,8 @@ function initSmoothScroll() {
 /*  Show/hide admin floating bar based on session  */
 function updateAdminUI() {
   let bar = document.getElementById('adminFloatBar');
+  const coverBtn  = document.getElementById('heroCoverEditBtn');
+  const avatarBtn = document.getElementById('avatarEditBtn');
   if (isAdmin()) {
     if (!bar) {
       bar = document.createElement('div');
@@ -134,8 +136,56 @@ function updateAdminUI() {
         updateAdminUI();
       });
     }
+    if (coverBtn) {
+      coverBtn.classList.add('visible');
+      const fileInput = document.getElementById('heroCoverFile');
+      fileInput.addEventListener('change', e => {
+        const file = e.target.files[0]; if (!file) return;
+        fileInput.value = '';
+        openCropper(file, 3 / 1, async blob => {
+          const icon = coverBtn.querySelector('i');
+          icon.className = 'fas fa-spinner fa-spin';
+          try {
+            const url = await db.uploadImage(blobToFile(blob, file.name), 'covers');
+            await db.setConfig('heroBg', url);
+            const cover = document.getElementById('heroCover');
+            if (cover) cover.style.backgroundImage = `url('${url}')`;
+          } catch (err) {
+            alert('Lỗi upload: ' + err.message);
+          } finally {
+            icon.className = 'fas fa-camera';
+          }
+        });
+      });
+    }
+    if (avatarBtn) {
+      avatarBtn.classList.add('visible');
+      const fileInput = document.getElementById('avatarFile');
+      fileInput.addEventListener('change', e => {
+        const file = e.target.files[0]; if (!file) return;
+        fileInput.value = '';
+        openCropper(file, 1, async blob => {
+          const icon = avatarBtn.querySelector('i');
+          icon.className = 'fas fa-spinner fa-spin';
+          try {
+            const url = await db.uploadImage(blobToFile(blob, file.name), 'avatars');
+            await db.setConfig('avatarUrl', url);
+            const img = document.getElementById('introAvatar');
+            const placeholder = document.getElementById('introAvatarPlaceholder');
+            if (img) { img.src = url; img.classList.add('loaded'); }
+            if (placeholder) placeholder.classList.add('hidden');
+          } catch (err) {
+            alert('Lỗi upload: ' + err.message);
+          } finally {
+            icon.className = 'fas fa-camera';
+          }
+        });
+      });
+    }
   } else {
     if (bar) bar.remove();
+    if (coverBtn)  coverBtn.classList.remove('visible');
+    if (avatarBtn) avatarBtn.classList.remove('visible');
   }
 }
 
@@ -559,6 +609,70 @@ function closeEditor(overlayId) {
   document.body.style.overflow = '';
 }
 
+/* ── Cropper helper ──
+   openCropper(file, aspectRatio, onConfirm)
+   aspectRatio: 1 = square, 16/9 = landscape, NaN = free
+   onConfirm(blob) will be called with cropped image as Blob
+*/
+let _cropperInstance = null;
+
+function openCropper(file, aspectRatio, onConfirm) {
+  const overlay  = document.getElementById('cropOverlay');
+  const cropImg  = document.getElementById('cropImg');
+  const confirmBtn = document.getElementById('cropConfirmBtn');
+  const cancelBtn  = document.getElementById('cropCancelBtn');
+  const closeBtn   = document.getElementById('cropCancel');
+
+  // Reset previous cropper
+  if (_cropperInstance) { _cropperInstance.destroy(); _cropperInstance = null; }
+
+  const objectUrl = URL.createObjectURL(file);
+  cropImg.src = objectUrl;
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  cropImg.onload = () => {
+    _cropperInstance = new Cropper(cropImg, {
+      aspectRatio: aspectRatio,
+      viewMode: 1,
+      autoCropArea: 0.9,
+      responsive: true,
+      background: false,
+    });
+  };
+
+  const close = () => {
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    if (_cropperInstance) { _cropperInstance.destroy(); _cropperInstance = null; }
+    URL.revokeObjectURL(objectUrl);
+    confirmBtn.removeEventListener('click', onConfirmClick);
+    cancelBtn.removeEventListener('click', close);
+    closeBtn.removeEventListener('click', close);
+  };
+
+  const onConfirmClick = () => {
+    if (!_cropperInstance) return;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    _cropperInstance.getCroppedCanvas({ maxWidth: 2048, maxHeight: 2048 }).toBlob(blob => {
+      close();
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = '<i class="fas fa-check"></i> Xác nhận';
+      onConfirm(blob);
+    }, file.type || 'image/jpeg', 0.92);
+  };
+
+  confirmBtn.addEventListener('click', onConfirmClick);
+  cancelBtn.addEventListener('click', close);
+  closeBtn.addEventListener('click', close);
+}
+
+/* blobToFile: chuyển Blob thành File để dùng với db.uploadImage */
+function blobToFile(blob, filename) {
+  return new File([blob], filename, { type: blob.type });
+}
+
 /* ── Post editor ── */
 function openPostEditor(post = null) {
   pendingPostImgFile = null;
@@ -588,11 +702,14 @@ function initPostEditor() {
 
   document.getElementById('pf-img-file').addEventListener('change', e => {
     const file = e.target.files[0]; if (!file) return;
-    pendingPostImgFile = file;
-    document.getElementById('pf-img').value = '';
-    const prev = document.getElementById('pf-img-preview');
-    prev.src = URL.createObjectURL(file);
-    prev.classList.remove('hidden');
+    document.getElementById('pf-img-file').value = '';
+    openCropper(file, NaN, blob => {
+      pendingPostImgFile = blobToFile(blob, file.name);
+      document.getElementById('pf-img').value = '';
+      const prev = document.getElementById('pf-img-preview');
+      prev.src = URL.createObjectURL(blob);
+      prev.classList.remove('hidden');
+    });
   });
 
   document.getElementById('postEditorClose').addEventListener('click',  () => closeEditor('postEditorOverlay'));
@@ -661,11 +778,14 @@ function initPhotoEditor() {
 
   document.getElementById('ph-img-file').addEventListener('change', e => {
     const file = e.target.files[0]; if (!file) return;
-    pendingPhotoImgFile = file;
-    document.getElementById('ph-img').value = '';
-    const prev = document.getElementById('ph-img-preview');
-    prev.src = URL.createObjectURL(file);
-    prev.classList.remove('hidden');
+    document.getElementById('ph-img-file').value = '';
+    openCropper(file, NaN, blob => {
+      pendingPhotoImgFile = blobToFile(blob, file.name);
+      document.getElementById('ph-img').value = '';
+      const prev = document.getElementById('ph-img-preview');
+      prev.src = URL.createObjectURL(blob);
+      prev.classList.remove('hidden');
+    });
   });
 
   document.getElementById('photoEditorClose').addEventListener('click',  () => closeEditor('photoEditorOverlay'));
@@ -758,6 +878,63 @@ function initPodcastEditor() {
   });
 }
 
+/* ── Image viewer ─────────────────────────────── */
+// Excluded containers: don't open viewer for UI/editor images
+const IMG_VIEWER_EXCLUDE = [
+  '#cropOverlay', '#imgViewerOverlay', '#lightboxOverlay',
+  '.editor-modal', '.img-viewer-img', '.pf-img-preview',
+  '.ph-img-preview', '#epYtThumb', '.intro-avatar', '#articleImg',
+  '.yt-thumb img', '.hero-cover'
+];
+
+function initImageViewer() {
+  const overlay  = document.getElementById('imgViewerOverlay');
+  const viewImg  = document.getElementById('imgViewerImg');
+  const closeBtn = document.getElementById('imgViewerClose');
+  if (!overlay) return;
+
+  const close = () => {
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+  };
+
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay || e.target === viewImg) close(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !overlay.classList.contains('hidden')) close();
+  });
+
+  document.addEventListener('click', e => {
+    const img = e.target.closest('img');
+    if (!img) return;
+    // Skip if inside excluded containers
+    for (const sel of IMG_VIEWER_EXCLUDE) {
+      if (img.matches(sel) || img.closest(sel)) return;
+    }
+    // Skip tiny icons / avatar-like images (< 80px rendered)
+    if (img.offsetWidth < 80 || img.offsetHeight < 80) return;
+    // Skip if no real src
+    if (!img.src || img.src === window.location.href) return;
+
+    viewImg.src = img.src;
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  });
+
+  // Mark clickable images with cursor style via MutationObserver
+  const markImages = () => {
+    document.querySelectorAll('img').forEach(img => {
+      if (img.offsetWidth >= 80 && img.src && img.src !== window.location.href) {
+        const excluded = IMG_VIEWER_EXCLUDE.some(sel => img.matches(sel) || img.closest(sel));
+        if (!excluded) img.classList.add('img-clickable');
+      }
+    });
+  };
+  const observer = new MutationObserver(markImages);
+  observer.observe(document.body, { childList: true, subtree: true });
+  markImages();
+}
+
 /* ── Router init ──────────────────────────────── */
 function initPageRouter() {
   document.addEventListener('click', e => {
@@ -812,4 +989,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initPostEditor();
   initPhotoEditor();
   initPodcastEditor();
+  initImageViewer();
 });

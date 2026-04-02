@@ -4015,10 +4015,14 @@ body.page-loaded .intro-layout {
 
 @media (max-width: 500px) {
   /* Podcast — full width card with smaller thumb */
+  .yt-row { position: relative; }
   .yt-thumb { width: 100px; min-width: 100px; height: 56px; }
   .yt-card { padding: 10px 0; gap: 8px; }
   .yt-info { padding: 0 8px; }
   .yt-title { font-size: 0.88rem; }
+  /* Move admin actions to top-right corner */
+  .yt-admin-actions { position: absolute; top: 4px; right: 8px; padding: 0; opacity: 1; gap: 4px; }
+  .card-btn-edit, .card-btn-del { width: 26px; height: 26px; font-size: 0.7rem; }
 }
 /*  Admin floating bar (visible only when logged in)  */
 #adminFloatBar {

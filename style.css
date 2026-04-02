@@ -5071,7 +5071,11 @@ img.img-clickable { cursor: zoom-in; }
   .intro-avatar-wrap,
   .intro-avatar,
   .intro-avatar-placeholder { width: 120px; height: 120px; }
-  .intro-fullname { font-size: 1.5rem; }
+  .intro-fullname { font-size: 1.5rem; text-align: center; }
+  .intro-slogan   { text-align: center; }
+  .info-rows      { text-align: left; }
+  .info-row       { text-align: left; }
+  .info-label, .info-value { text-align: left; }
 
   /* Contact form */
   .contact-form input,

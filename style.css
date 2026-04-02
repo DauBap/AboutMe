@@ -522,12 +522,10 @@ body {
 .avatar-edit-btn.visible { display: flex; }
 .avatar-edit-btn:hover { background: rgba(0,0,0,0.85); transform: scale(1.1); }
 
-.intro-text { flex: 1; min-width: 0; }
+.intro-text { flex: 1; min-width: 0; position: relative; }
 
 .intro-text-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: block;
 }
 
 .intro-edit-btn {
@@ -538,6 +536,10 @@ body {
   border-radius: 50%;
   cursor: pointer;
   font-size: 0.75rem;
+  position: absolute;
+  top: -4px;
+  right: 0;
+}
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4012,8 +4014,11 @@ body.page-loaded .intro-layout {
 .yt-card:hover .yt-title { color: var(--pink-main); }
 
 @media (max-width: 500px) {
-  .yt-thumb { width: 120px; min-width: 120px; height: 68px; }
-  .yt-title { font-size: 0.88rem; }
+  /* Podcast — shrink thumbnail on mobile */
+  .yt-thumb { width: 100px; min-width: 100px; height: 56px; }
+  .yt-card { padding: 8px 6px; gap: 8px; }
+  .yt-info { padding: 0 10px; }
+  .yt-title { font-size: 0.82rem; }
 }
 /*  Admin floating bar (visible only when logged in)  */
 #adminFloatBar {

@@ -5068,12 +5068,17 @@ img.img-clickable { cursor: zoom-in; }
   .section-contact { padding: 40px 5%; }
 
   /* Intro */
+  .intro-layout {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
   .intro-avatar-wrap,
   .intro-avatar,
   .intro-avatar-placeholder { width: 120px; height: 120px; }
   .intro-fullname { font-size: 1.5rem; text-align: center; }
   .intro-slogan   { text-align: center; }
-  .info-rows      { text-align: left; }
+  .info-rows      { text-align: left; justify-self: start; }
   .info-row       { text-align: left; }
   .info-label, .info-value { text-align: left; }
 
@@ -5084,6 +5089,9 @@ img.img-clickable { cursor: zoom-in; }
 
   /* IG grid — always 3 columns, full bleed to screen edges */
   .ig-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; margin-left: -5%; margin-right: -5%; }
+
+  /* Masonry — fix width on mobile */
+  .masonry-grid { width: 100%; overflow: hidden; }
 
   /* Bottom nav — show on mobile */
   .bottom-nav { display: flex; }

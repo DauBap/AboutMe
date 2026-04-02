@@ -4014,10 +4014,10 @@ body.page-loaded .intro-layout {
 .yt-card:hover .yt-title { color: var(--pink-main); }
 
 @media (max-width: 500px) {
-  /* Podcast — mobile size */
-  .yt-thumb { width: 140px; min-width: 140px; height: 79px; }
-  .yt-card { padding: 12px 10px; gap: 12px; }
-  .yt-info { padding: 0 12px; }
+  /* Podcast — full width card with smaller thumb */
+  .yt-thumb { width: 100px; min-width: 100px; height: 56px; }
+  .yt-card { padding: 10px 0; gap: 8px; }
+  .yt-info { padding: 0 8px; }
   .yt-title { font-size: 0.88rem; }
 }
 /*  Admin floating bar (visible only when logged in)  */

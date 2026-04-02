@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>notphuongthao</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- ===================== HEADER / NAV ===================== -->
+  <header class="site-header" id="siteHeader">
+    <a href="#" class="header-logo">notphuongthao</a>
+
+    <nav class="header-nav" id="headerNav">
+      <a href="#gioi-thieu" class="nav-item scroll-link">Giới Thiệu</a>
+      <a href="#" class="nav-item" data-page="blog">Blog</a>
+      <a href="#" class="nav-item" data-page="photos">Hình Chụp</a>
+      <a href="#" class="nav-item" data-page="podcast">Podcast</a>
+      <a href="https://tarot-meopring.vercel.app/" target="_blank" class="nav-item">Tarot</a>
+      <a href="#lien-he" class="nav-item scroll-link">Liên Hệ</a>
+    </nav>
+
+    <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+  </header>
+
+  <!-- Mobile nav -->
+  <nav class="mobile-menu" id="mobileMenu">
+    <a href="#gioi-thieu" class="scroll-link">Giới Thiệu</a>
+    <a href="#" data-page="blog">Blog</a>
+    <a href="#" data-page="photos">Hình Chụp</a>
+    <a href="#" data-page="podcast">Podcast</a>
+    <a href="https://tarot-meopring.vercel.app/" target="_blank">Tarot</a>
+    <a href="#lien-he" class="scroll-link">Liên Hệ</a>
+  </nav>
+
+  <!-- ===================== HERO / COVER ===================== -->
+  <div id="mainView">
+  <section class="hero" id="hero">
+    <!-- Ảnh bìa — đặt qua admin -->
+    <div class="hero-cover" id="heroCover"></div>
+    <!-- Lớp overlay mờ -->
+    <div class="hero-overlay"></div>
+    <!-- Nội dung chính giữa -->
+    <div class="hero-content">
+      <p class="hero-sub" id="heroSub" data-field="heroSub">student ✦ dreamer ✦ creator</p>
+      <h1 class="hero-name" id="heroName" data-field="heroName">Phương Thảo</h1>
+      <p class="hero-slogan" id="heroSlogan" data-field="heroSlogan">Chia sẻ những điều mình yêu thích 🌸</p>
+      <a href="#gioi-thieu" class="hero-cta scroll-link">Khám phá ↓</a>
+    </div>
+    <!-- Scroll indicator -->
+    
+  </section>
+
+  <!-- ===================== GIỚI THIỆU ===================== -->
+  <section class="section-intro" id="gioi-thieu">
+    <div class="section-inner">
+      <span class="section-tag">✦ Giới Thiệu</span>
+
+      <div class="intro-layout">
+        <!-- Avatar -->
+        <div class="intro-avatar-wrap">
+          <img src="" alt="Avatar" id="introAvatar" class="intro-avatar" />
+          <div class="intro-avatar-placeholder" id="introAvatarPlaceholder"><i class="fas fa-user"></i></div>
+        </div>
+
+        <!-- Text -->
+        <div class="intro-text">
+          <h2 class="intro-fullname" id="introName" data-field="introName">Phương Thảo</h2>
+          <p class="intro-slogan" id="introSlogan" data-field="introSlogan">Chia sẻ những điều mình yêu thích 🌸</p>
+          <div class="info-rows">
+            <div class="info-row">
+              <span class="info-icon">📍</span>
+              <span class="info-label">Quê quán</span>
+              <span class="info-value" id="introHometown" data-field="introHometown">Hồ Chí Minh, Việt Nam</span>
+            </div>
+            <div class="info-row">
+              <span class="info-icon">💖</span>
+              <span class="info-label">Sở thích</span>
+              <span class="info-value" id="introHobbies" data-field="introHobbies">Viết lách, nhiếp ảnh, podcast, tarot</span>
+            </div>
+            <div class="info-row">
+              <span class="info-icon">🎓</span>
+              <span class="info-label">Vai trò</span>
+              <span class="info-value" id="introBio" data-field="introBio">Học sinh / Sinh viên</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== LIÊN HỆ ===================== -->
+  <section class="section-contact" id="lien-he">
+    <div class="section-inner">
+      <span class="section-tag">✦ Liên Hệ</span>
+      <h2 class="section-title">Kết nối với mình nhé!</h2>
+      <div class="contact-layout">
+        <form class="contact-form" id="contactForm">
+          <input type="text"  placeholder="Tên của bạn 🌸" required />
+          <input type="email" placeholder="Email của bạn 💌" required />
+          <textarea rows="4"  placeholder="Lời nhắn cho mình... ✍️" required></textarea>
+          <button type="submit" class="btn-send">Gửi lời nhắn 💖</button>
+        </form>
+        <div class="contact-info">
+          <p id="contactEmail" data-field="contactEmail">✉️ phuongthao@email.com</p>
+          <p id="contactLocation" data-field="contactLocation">📍 Hồ Chí Minh, Việt Nam</p>
+          <div class="socials-row">
+            <a href="#" id="socialFb"  data-field="socialFb"  class="soc-btn"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" id="socialIg"  data-field="socialIg"  class="soc-btn"><i class="fab fa-instagram"></i></a>
+            <a href="#" id="socialTtk" data-field="socialTtk" class="soc-btn"><i class="fab fa-tiktok"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <p>Made with 💖 by <span class="sig-script" style="font-size:1.2rem">Phương Thảo</span> · 2026</p>
+  </footer>
+  </div><!-- /#mainView -->
+
+  <!-- ===================== SUB-PAGE VIEW ===================== -->
+  <div id="subView" class="hidden">
+    <div class="subview-body" id="subviewBody"></div>
+
+    <!-- Article modal -->
+    <div class="article-overlay hidden" id="articleOverlay">
+      <div class="article-modal" id="articleModal">
+        <button class="article-close-btn" id="articleClose"><i class="fas fa-times"></i></button>
+        <img class="article-hero-img hidden" id="articleImg" src="" alt="" />
+        <div class="article-body">
+          <div class="article-meta">
+            <span class="article-tag" id="articleTag"></span>
+            <span class="article-date" id="articleDate"></span>
+          </div>
+          <h2 class="article-title" id="articleTitle"></h2>
+          <div class="article-content" id="articleContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lightbox (Instagram style) -->
+    <div class="lightbox-overlay hidden" id="lightboxOverlay">
+      <div class="lightbox-dialog">
+        <!-- Image side -->
+        <div class="lightbox-img-side" id="lightboxBackdrop">
+          <button class="lightbox-close-btn" id="lightboxClose"><i class="fas fa-times"></i></button>
+          <button class="lightbox-arrow left" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+          <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+          <button class="lightbox-arrow right" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <!-- Caption panel -->
+        <div class="lightbox-panel" id="lightboxCaptionWrap">
+          <div class="lightbox-panel-header">
+            <span class="lightbox-counter" id="lightboxCounter"></span>
+          </div>
+          <p class="lightbox-caption" id="lightboxCaption"></p>
+        </div>
+      </div>
+    </div>
+  </div><!-- /#subView -->
+
+  <!-- ===================== POST EDITOR MODAL ===================== -->
+  <div class="editor-overlay hidden" id="postEditorOverlay">
+    <div class="editor-modal" id="postEditorModal">
+      <div class="editor-header">
+        <h3 id="postEditorTitle">Bài viết mới</h3>
+        <button class="editor-close" id="postEditorClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="editor-body">
+        <input type="hidden" id="pf-id" value="-1" />
+        <div class="editor-field">
+          <label>Ảnh bìa <span class="field-hint">URL hoặc upload</span></label>
+          <div class="img-input-row">
+            <input type="text" id="pf-img" placeholder="https://..." />
+            <label class="btn-upload" title="Upload ảnh">
+              <i class="fas fa-upload"></i>
+              <input type="file" id="pf-img-file" accept="image/*" style="display:none" />
+            </label>
+          </div>
+          <img id="pf-img-preview" class="img-preview hidden" src="" alt="" />
+        </div>
+        <div class="editor-row">
+          <div class="editor-field">
+            <label>Tag / Chủ đề</label>
+            <input type="text" id="pf-tag" placeholder="Du lịch, Suy nghĩ..." />
+          </div>
+        </div>
+        <div class="editor-field">
+          <label>Tiêu đề</label>
+          <input type="text" id="pf-title" placeholder="Tiêu đề bài viết..." />
+        </div>
+        <div class="editor-field">
+          <label>Tóm tắt <span class="field-hint">hiện trên card</span></label>
+          <textarea id="pf-summary" rows="2" placeholder="Mô tả ngắn..."></textarea>
+        </div>
+        <div class="editor-field">
+          <label>Nội dung <span class="field-hint">dòng trống = đoạn mới</span></label>
+          <textarea id="pf-content" rows="8" placeholder="Viết nội dung bài ở đây..."></textarea>
+        </div>
+      </div>
+      <div class="editor-footer">
+        <button class="btn-editor-cancel" id="postEditorCancel">Huỷ</button>
+        <button class="btn-editor-save" id="postEditorSave"><i class="fas fa-save"></i> Lưu bài viết</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PHOTO EDITOR MODAL ===================== -->
+  <div class="editor-overlay hidden" id="photoEditorOverlay">
+    <div class="editor-modal" id="photoEditorModal">
+      <div class="editor-header">
+        <h3 id="photoEditorTitle">Ảnh mới</h3>
+        <button class="editor-close" id="photoEditorClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="editor-body">
+        <input type="hidden" id="ph-id" value="-1" />
+        <div class="editor-field">
+          <label>Ảnh <span class="field-hint">URL hoặc upload</span></label>
+          <div class="img-input-row">
+            <input type="text" id="ph-img" placeholder="https://..." />
+            <label class="btn-upload" title="Upload ảnh">
+              <i class="fas fa-upload"></i>
+              <input type="file" id="ph-img-file" accept="image/*" style="display:none" />
+            </label>
+          </div>
+          <img id="ph-img-preview" class="img-preview hidden" src="" alt="" />
+        </div>
+        <div class="editor-field">
+          <label>Caption <span class="field-hint">không bắt buộc</span></label>
+          <textarea id="ph-caption" rows="3" placeholder="Mô tả ảnh..."></textarea>
+        </div>
+      </div>
+      <div class="editor-footer">
+        <button class="btn-editor-cancel" id="photoEditorCancel">Huỷ</button>
+        <button class="btn-editor-save" id="photoEditorSave"><i class="fas fa-save"></i> Lưu ảnh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PODCAST EDITOR MODAL ===================== -->
+  <div class="editor-overlay hidden" id="podcastEditorOverlay">
+    <div class="editor-modal" id="podcastEditorModal">
+      <div class="editor-header">
+        <h3 id="podcastEditorTitle">Video mới</h3>
+        <button class="editor-close" id="podcastEditorClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="editor-body">
+        <input type="hidden" id="ep-id" value="-1" />
+        <div class="editor-field">
+          <label>Link YouTube</label>
+          <input type="text" id="ep-link" placeholder="https://youtube.com/watch?v=..." />
+          <div class="yt-preview-wrap hidden" id="epYtPreview">
+            <img id="epYtThumb" src="" alt="" />
+          </div>
+        </div>
+        <div class="editor-field">
+          <label>Tiêu đề</label>
+          <input type="text" id="ep-title" placeholder="Tên video..." />
+        </div>
+      </div>
+      <div class="editor-footer">
+        <button class="btn-editor-cancel" id="podcastEditorCancel">Huỷ</button>
+        <button class="btn-editor-save" id="podcastEditorSave"><i class="fas fa-save"></i> Lưu video</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="supabase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

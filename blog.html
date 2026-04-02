@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — notphuongthao</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="sub-page">
+
+  <!-- Sub-page Header -->
+  <header class="sub-header">
+    <a href="index.html" class="sub-back"><i class="fas fa-arrow-left"></i></a>
+    <a href="index.html" class="sub-logo sig-script">notphuongthao</a>
+    <span class="sub-page-label">Blog</span>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="sub-hero sub-hero--blog">
+    <div class="sub-hero-content">
+      <h1 class="sub-hero-title">Blog</h1>
+      <p class="sub-hero-sub">Những điều mình muốn kể</p>
+    </div>
+  </section>
+
+  <!-- Blog Grid -->
+  <main class="sub-main">
+    <div class="blog-grid" id="blogGrid"></div>
+    <div class="empty-state hidden" id="emptyState">
+      <i class="fas fa-feather-alt"></i>
+      <p>Chưa có bài viết nào. Hãy quay lại sau nhé!</p>
+    </div>
+  </main>
+
+  <!-- Article Modal -->
+  <div class="article-overlay hidden" id="articleOverlay">
+    <div class="article-modal" id="articleModal">
+      <button class="modal-close-x" id="articleClose"><i class="fas fa-times"></i></button>
+      <img class="article-img" id="articleImg" src="" alt="" />
+      <div class="article-body">
+        <span class="article-tag" id="articleTag"></span>
+        <h2 class="article-title" id="articleTitle"></h2>
+        <div class="article-content" id="articleContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="pages.js"></script>
+</body>
+</html>

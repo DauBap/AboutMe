@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập · notphuongthao</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a0a2e 0%, #2d1a50 50%, #1e0a35 100%);
+      padding: 20px;
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 48px 44px 44px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    }
+
+    .login-logo {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.8rem;
+      color: #f5b8d4;
+      margin-bottom: 8px;
+      display: block;
+      text-decoration: none;
+    }
+
+    .login-sub {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 36px;
+      letter-spacing: 1px;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .input-wrap input::placeholder { color: rgba(255,255,255,0.35); }
+    .input-wrap input:focus {
+      border-color: #e07090;
+      background: rgba(255,255,255,0.12);
+    }
+
+    .input-wrap .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.35);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #e07090, #c050a0);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      margin-top: 4px;
+    }
+    .btn-login:hover  { opacity: 0.9; transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(0); }
+
+    .error-msg {
+      font-size: 0.82rem;
+      color: #ff8fa8;
+      margin-top: 12px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 28px;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: rgba(255,255,255,0.65); }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+  <a href="index.html" class="login-logo">notphuongthao</a>
+  <p class="login-sub">ADMIN ACCESS</p>
+
+  <form id="loginForm">
+    <div class="input-wrap">
+      <span class="icon">🔒</span>
+      <input type="password" id="passInput" placeholder="Mật khẩu..." autocomplete="current-password" required />
+    </div>
+    <button type="submit" class="btn-login">Đăng nhập</button>
+    <p class="error-msg" id="errMsg">Sai mật khẩu rồi! Thử lại nhé 🙈</p>
+  </form>
+
+  <a href="index.html" class="back-link">← Quay về trang chủ</a>
+</div>
+
+<script>
+  const ADMIN_KEY   = 'npt_isAdmin';
+  const PASS_KEY    = 'npt_adminPass';
+  const DEFAULT_PASS = '14101999';
+
+  // Already logged in → redirect immediately
+  if (localStorage.getItem(ADMIN_KEY) === '1') {
+    location.href = 'index.html';
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const pass    = document.getElementById('passInput').value;
+    const correct = localStorage.getItem(PASS_KEY) || DEFAULT_PASS;
+    if (pass === correct) {
+      localStorage.setItem(ADMIN_KEY, '1');
+      location.href = 'index.html';
+    } else {
+      document.getElementById('errMsg').classList.add('show');
+      document.getElementById('passInput').value = '';
+      document.getElementById('passInput').focus();
+    }
+  });
+</script>
+</body>
+</html>

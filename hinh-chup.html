@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hình Chụp — notphuongthao</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="sub-page">
+
+  <!-- Sub-page Header -->
+  <header class="sub-header">
+    <a href="index.html" class="sub-back"><i class="fas fa-arrow-left"></i></a>
+    <a href="index.html" class="sub-logo sig-script">notphuongthao</a>
+    <span class="sub-page-label">Hình Chụp</span>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="sub-hero sub-hero--photos">
+    <div class="sub-hero-content">
+      <h1 class="sub-hero-title">Hình Chụp</h1>
+      <p class="sub-hero-sub">Những khoảnh khắc mình lưu giữ</p>
+    </div>
+  </section>
+
+  <!-- Photos Grid -->
+  <main class="sub-main">
+    <div class="masonry-grid" id="photosGrid"></div>
+    <div class="empty-state hidden" id="emptyState">
+      <i class="fas fa-camera"></i>
+      <p>Chưa có hình nào. Hãy quay lại sau nhé!</p>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox-overlay hidden" id="lightboxOverlay">
+    <button class="modal-close-x lightbox-close" id="lightboxClose"><i class="fas fa-times"></i></button>
+    <button class="lightbox-arrow left" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+    <div class="lightbox-inner">
+      <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+      <p class="lightbox-caption" id="lightboxCaption"></p>
+    </div>
+    <button class="lightbox-arrow right" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
+  </div>
+
+  <script src="pages.js"></script>
+</body>
+</html>

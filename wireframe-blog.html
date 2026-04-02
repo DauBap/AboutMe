@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireframe — Blog Section</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f0f0; color: #333; }
+
+  /* ── LABEL UTIL ── */
+  .label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #999; margin-bottom: 8px;
+  }
+  .note {
+    font-size: 11px; color: #aaa; font-style: italic; margin-top: 4px;
+  }
+
+  /* ── SECTION TITLE ── */
+  h2 { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+       color: #888; padding: 24px 32px 12px; border-bottom: 1px solid #ddd; background: #fff; }
+
+  /* ══ SCREEN 1: BLOG PAGE ══ */
+  .screen { padding: 32px; }
+
+  /* sub-header bar */
+  .sub-header {
+    background: #2d2540;
+    color: #fff;
+    padding: 14px 32px;
+    display: flex; align-items: center; gap: 24px;
+    font-size: 13px; margin-bottom: 32px;
+  }
+  .sub-header .logo { font-size: 18px; font-weight: 700; color: #e8a4c4; margin-right: auto; }
+  .sub-header .nav-item { opacity: 0.6; }
+  .sub-header .nav-item.active { opacity: 1; color: #e8a4c4; border-bottom: 2px solid #e8a4c4; padding-bottom: 2px; }
+
+  /* blog grid */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .blog-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .blog-card:hover { transform: translateY(-6px); }
+
+  /* card image zone */
+  .card-img {
+    height: 160px;
+    background: #d9cfe8;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; flex-shrink: 0;
+  }
+  .card-img.has-image { background: linear-gradient(135deg,#c9b4db,#f0c4d8); }
+  .card-img.no-image  { background: linear-gradient(135deg,#e4daf0,#f5e6f0); }
+  .card-img svg { opacity: 0.35; }
+  .img-label {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(255,255,255,0.7);
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 50px; color: #8064a2;
+  }
+
+  /* card body */
+  .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .chip { background: #fde8f0; color: #c0587a; font-size: 10px; font-weight: 700;
+          letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 50px; }
+  .date { font-size: 11px; color: #bbb; }
+  .card-title { font-size: 15px; font-weight: 700; color: #2d2540; margin-bottom: 8px;
+                font-family: Georgia, serif; line-height: 1.4; }
+  .card-summary { font-size: 12px; color: #999; line-height: 1.6; flex: 1; margin-bottom: 12px; }
+  .read-more { color: #c0587a; font-size: 12px; font-weight: 700; }
+
+  /* ══ DIVIDER ══ */
+  .divider {
+    background: #e0e0e0; height: 2px; margin: 0 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .divider span {
+    background: #e0e0e0; padding: 0 16px;
+    font-size: 11px; letter-spacing: 2px; color: #bbb; white-space: nowrap;
+  }
+
+  /* ══ SCREEN 2: ARTICLE MODAL ══ */
+  .modal-screen {
+    padding: 32px;
+    display: flex; justify-content: center;
+  }
+  .modal-backdrop {
+    background: rgba(45,37,64,0.85);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 720px;
+    padding: 40px;
+    display: flex; justify-content: center;
+  }
+  .article-modal {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .modal-hero {
+    height: 220px;
+    background: linear-gradient(135deg, #c9b4db, #f0c4d8);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .modal-hero-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 2px; color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+  }
+  .close-x {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(255,255,255,0.9); border-radius: 50%;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: #666; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .modal-body { padding: 28px 36px 36px; }
+  .modal-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .modal-title { font-family: Georgia, serif; font-size: 22px; color: #2d2540;
+                 font-weight: 700; margin-bottom: 20px; line-height: 1.4; }
+  .modal-content-line {
+    height: 12px; background: #eee; border-radius: 4px; margin-bottom: 10px;
+  }
+  .modal-content-line.short { width: 70%; }
+  .modal-content-line.shorter { width: 50%; }
+
+  /* ══ SCREEN 3: NO IMAGE VARIANT ══ */
+  .label-bar {
+    background: #fff; padding: 16px 32px;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: #bbb;
+    border-top: 1px solid #eee;
+  }
+
+  /* ══ ANNOTATIONS ══ */
+  .annotation-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    max-width: 960px; margin: 24px auto 0; padding-bottom: 40px;
+  }
+  .anno-box {
+    background: #fffbe6; border: 1px dashed #f0c040;
+    border-radius: 8px; padding: 14px 18px;
+    font-size: 12px; line-height: 1.7; color: #555;
+  }
+  .anno-box strong { color: #a07000; display: block; margin-bottom: 4px; }
+
+  /* responsive */
+  @media (max-width: 700px) {
+    .blog-grid { grid-template-columns: 1fr; }
+    .annotation-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN 1: BLOG PAGE ══ -->
+<h2>▶ SCREEN 1 — Trang Blog (sub-view)</h2>
+
+<!-- fake header -->
+<div class="sub-header">
+  <span class="logo">notphuongthao</span>
+  <span class="nav-item">Giới Thiệu</span>
+  <span class="nav-item active">Blog ●</span>
+  <span class="nav-item">Hình Chụp</span>
+  <span class="nav-item">Podcast</span>
+  <span class="nav-item">Liên Hệ</span>
+</div>
+
+<div class="screen">
+  <div class="blog-grid">
+
+    <!-- CARD 1 — có ảnh + tag + date -->
+    <div class="blog-card">
+      <div class="card-img has-image">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#8064a2"><path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        <span class="img-label">BÌA BÀI VIẾT</span>
+      </div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="chip">Du lịch</span>
+          <span class="date">02/04/2026</span>
+        </div>
+        <div class="card-title">Tiêu đề bài viết xuất hiện ở đây</div>
+        <div class="card-summary">Tóm tắt ngắn của bài viết, tối đa 3 dòng, sau đó bị cắt bớt bằng dấu "..." giúp giao diện gọn gàng...</div>
+        <span class="read-more">Đọc tiếp →</span>
+      </div>
+    </div>
+
+    <!-- CARD 2 — không có ảnh -->
+    <div class="blog-card">
+      <div class="card-img no-image">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#b094cc"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+        <span class="img-label">KHÔNG CÓ ẢNH</span>
+      </div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="chip">Suy nghĩ</span>
+          <span class="date">01/04/2026</span>
+        </div>
+        <div class="card-title">Bài viết không có ảnh bìa vẫn trông đẹp</div>
+        <div class="card-summary">Nền gradient tím hồng nhẹ thay thế khi không có ảnh bìa, đảm bảo layout đồng đều...</div>
+        <span class="read-more">Đọc tiếp →</span>
+      </div>
+    </div>
+
+    <!-- CARD 3 -->
+    <div class="blog-card">
+      <div class="card-img has-image">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#8064a2"><path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        <span class="img-label">BÌA BÀI VIẾT</span>
+      </div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="chip">Công việc</span>
+          <span class="date">28/03/2026</span>
+        </div>
+        <div class="card-title">Một ngày của UX designer trông như thế nào</div>
+        <div class="card-summary">Từ lúc mở laptop đến khi đóng lại, mình đã làm gì? Cùng nhìn vào routine hàng ngày của mình...</div>
+        <span class="read-more">Đọc tiếp →</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- hover note -->
+  <div class="annotation-grid">
+    <div class="anno-box">
+      <strong>🖱️ Hover effect</strong>
+      Card nhấc lên <code>translateY(-8px)</code> khi hover — tạo cảm giác có thể click.
+    </div>
+    <div class="anno-box">
+      <strong>📐 Grid layout</strong>
+      3 cột trên desktop, tự động xuống 1 cột trên mobile. Khoảng cách 24–32px.
+    </div>
+    <div class="anno-box">
+      <strong>🏷️ Tag + Date</strong>
+      Tag màu hồng pill-style bên trái, ngày bên phải — cùng hàng, cân bằng thị giác.
+    </div>
+    <div class="anno-box">
+      <strong>📝 Content field</strong>
+      <code>content</code> = nội dung đầy đủ (plain text, lưu localStorage). Hiển thị khi mở popup.
+    </div>
+  </div>
+</div>
+
+<!-- ══ DIVIDER ══ -->
+<div class="label-bar">▼ KHI CLICK VÀO CARD → MỞ POPUP</div>
+
+<!-- ══ SCREEN 2: ARTICLE MODAL ══ -->
+<h2>▶ SCREEN 2 — Article Popup (khi click vào card)</h2>
+
+<div class="modal-screen">
+  <div class="modal-backdrop">
+    <div class="article-modal">
+
+      <!-- hero image -->
+      <div class="modal-hero">
+        <span class="modal-hero-label">Ảnh bìa bài viết (nếu có)</span>
+        <div class="close-x">✕</div>
+      </div>
+
+      <!-- body -->
+      <div class="modal-body">
+        <div class="modal-meta">
+          <span class="chip">Du lịch</span>
+          <span class="date">02/04/2026</span>
+        </div>
+        <div class="modal-title">Tiêu đề bài viết đầy đủ xuất hiện ở đây với font serif lớn</div>
+        <!-- fake content lines -->
+        <div class="modal-content-line"></div>
+        <div class="modal-content-line"></div>
+        <div class="modal-content-line short"></div>
+        <br>
+        <div class="modal-content-line"></div>
+        <div class="modal-content-line"></div>
+        <div class="modal-content-line shorter"></div>
+        <br>
+        <div class="modal-content-line"></div>
+        <div class="modal-content-line short"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" style="padding-top: 0;">
+  <div class="annotation-grid">
+    <div class="anno-box">
+      <strong>🌫️ Backdrop</strong>
+      Nền tối mờ blur phía sau modal. Click ra ngoài = đóng popup.
+    </div>
+    <div class="anno-box">
+      <strong>✕ Nút đóng</strong>
+      Button tròn sticky trên cùng, luôn hiển thị dù scroll xuống nội dung dài.
+    </div>
+    <div class="anno-box">
+      <strong>🖼️ Hero image</strong>
+      Nếu bài có ảnh → hiện ở đầu modal (300px cao). Không có ảnh → ẩn đi, đọc bài thẳng luôn.
+    </div>
+    <div class="anno-box">
+      <strong>📜 Scroll nội dung</strong>
+      Modal có <code>max-height: 90vh</code>, overflow-y auto — bài dài thì scroll bên trong modal.
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 3: ADMIN FORM ref ══ -->
+<div class="label-bar">▼ ADMIN NHẬP DỮ LIỆU NHƯ SAO?</div>
+<h2>▶ SCREEN 3 — Form nhập bài viết (admin.html)</h2>
+
+<div class="screen">
+  <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+
+    <div style="margin-bottom: 18px;">
+      <div class="label">Ảnh bìa</div>
+      <div style="height: 48px; background: #f5f0fa; border: 2px dashed #d4b8e0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 12px; color: #bbb;">URL ảnh hoặc upload file (→ base64)</span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+      <div>
+        <div class="label">Tag / Chủ đề</div>
+        <div style="height: 40px; background: #f5f5f5; border-radius: 8px; border: 1.5px solid #e0e0e0;"></div>
+      </div>
+      <div>
+        <div class="label">Ngày (tự động)</div>
+        <div style="height: 40px; background: #f0f0f0; border-radius: 8px; border: 1.5px solid #e0e0e0; display:flex;align-items:center;padding:0 12px;">
+          <span style="font-size: 12px; color: #bbb;">02/04/2026 — tự set khi lưu</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 18px;">
+      <div class="label">Tiêu đề bài viết</div>
+      <div style="height: 40px; background: #f5f5f5; border-radius: 8px; border: 1.5px solid #e0e0e0;"></div>
+    </div>
+
+    <div style="margin-bottom: 18px;">
+      <div class="label">Tóm tắt (hiển thị trên card)</div>
+      <div style="height: 72px; background: #f5f5f5; border-radius: 8px; border: 1.5px solid #e0e0e0;"></div>
+    </div>
+
+    <div style="margin-bottom: 24px;">
+      <div class="label">Nội dung đầy đủ (hiển thị trong popup)</div>
+      <div style="height: 180px; background: #f5f5f5; border-radius: 8px; border: 1.5px solid #e0e0e0; padding: 12px;">
+        <div style="height: 10px; background: #e5e5e5; border-radius: 4px; margin-bottom: 8px; width: 85%;"></div>
+        <div style="height: 10px; background: #e5e5e5; border-radius: 4px; margin-bottom: 8px; width: 70%;"></div>
+        <div style="height: 10px; background: #e5e5e5; border-radius: 4px; margin-bottom: 8px;"></div>
+        <div style="height: 10px; background: #e5e5e5; border-radius: 4px; margin-bottom: 8px; width: 60%;"></div>
+      </div>
+      <div class="note">Plain text. Xuống dòng cách 1 dòng trống = tạo đoạn văn mới trong popup.</div>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <div style="flex:1; height: 44px; background: #d4549e; border-radius: 8px; display:flex;align-items:center;justify-content:center;">
+        <span style="color:#fff; font-weight:700; font-size: 13px;">💾 Lưu bài viết</span>
+      </div>
+      <div style="width: 100px; height: 44px; background: #eee; border-radius: 8px; display:flex;align-items:center;justify-content:center;">
+        <span style="color:#999; font-size: 13px;">Huỷ</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

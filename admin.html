@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — notphuongthao</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="admin-page">
+
+  <!-- Auth guard — hiện khi chưa đăng nhập -->
+  <div class="auth-guard hidden" id="authGuard">
+    <div class="modal-box" style="position:relative;margin:auto;top:auto;transform:none;">
+      <h3>Bạn chưa đăng nhập</h3>
+      <p class="modal-sub">Vui lòng đăng nhập để truy cập trang admin.</p>
+      <a href="index.html" class="btn-send" style="display:inline-block;text-align:center;text-decoration:none;margin-top:8px;">Quay về trang chủ</a>
+    </div>
+  </div>
+
+  <div class="admin-wrapper" id="adminWrapper">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <span class="sig-script" style="color:var(--pink-soft)">notphuongthao</span>
+        <small>Admin Panel</small>
+      </div>
+      <nav class="admin-nav">
+        <button class="admin-nav-btn active" data-panel="hero">🌙 Hero</button>
+        <button class="admin-nav-btn" data-panel="intro">👤 Giới Thiệu</button>
+        <button class="admin-nav-btn" data-panel="blog">✍️ Blog</button>
+        <button class="admin-nav-btn" data-panel="photos">📷 Hình Chụp</button>
+        <button class="admin-nav-btn" data-panel="podcast">🎙️ Podcast</button>
+        <button class="admin-nav-btn" data-panel="contact">💌 Liên Hệ</button>
+        <button class="admin-nav-btn" data-panel="settings">⚙️ Cài Đặt</button>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <a href="index.html" class="admin-back-btn"><i class="fas fa-arrow-left"></i> Xem trang</a>
+        <button id="adminLogoutBtn" class="btn-logout-sidebar"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+
+      <!-- HERO PANEL -->
+      <div class="admin-panel active" id="panel-hero">
+        <h2 class="panel-title">🌙 Chỉnh sửa Hero</h2>
+        <div class="field-group">
+          <label>Tên hiển thị</label>
+          <input type="text" id="f-heroName" data-key="heroName" placeholder="Phương Thảo" />
+        </div>
+        <div class="field-group">
+          <label>Sub-title (roles)</label>
+          <input type="text" id="f-heroSub" data-key="heroSub" placeholder="student ✦ dreamer ✦ creator" />
+        </div>
+        <div class="field-group">
+          <label>Slogan</label>
+          <input type="text" id="f-heroSlogan" data-key="heroSlogan" placeholder="Chia sẻ những điều mình yêu thích..." />
+        </div>
+        <div class="field-group">
+          <label>Ảnh bìa Hero (upload hoặc URL)</label>
+          <div class="upload-row">
+            <input type="text" id="f-heroBg" data-key="heroBg" placeholder="https://... hoặc để trống" />
+            <label class="btn-upload" for="heroBgUpload"><i class="fas fa-upload"></i> Upload</label>
+            <input type="file" id="heroBgUpload" accept="image/*" style="display:none" />
+          </div>
+          <img id="heroBgPreview" class="img-preview" src="" alt="" />
+        </div>
+        <div class="field-group">
+          <label>Ảnh Avatar</label>
+          <div class="upload-row">
+            <input type="text" id="f-avatarUrl" data-key="avatarUrl" placeholder="https://..." />
+            <label class="btn-upload" for="avatarUpload"><i class="fas fa-upload"></i> Upload</label>
+            <input type="file" id="avatarUpload" accept="image/*" style="display:none" />
+          </div>
+          <img id="avatarPreview" class="img-preview" src="" alt="" />
+        </div>
+        <button class="btn-save" data-panel="hero">💾 Lưu Hero</button>
+      </div>
+
+      <!-- INTRO PANEL -->
+      <div class="admin-panel" id="panel-intro">
+        <h2 class="panel-title">👤 Chỉnh sửa Giới Thiệu</h2>
+        <div class="field-group">
+          <label>Họ tên</label>
+          <input type="text" id="f-introName" data-key="introName" placeholder="Phương Thảo" />
+        </div>
+        <div class="field-group">
+          <label>Slogan</label>
+          <input type="text" id="f-introSlogan" data-key="introSlogan" placeholder="Chia sẻ những điều mình yêu thích 🌸" />
+        </div>
+        <div class="field-group">
+          <label>Quê quán</label>
+          <input type="text" id="f-introHometown" data-key="introHometown" placeholder="Hồ Chí Minh, Việt Nam" />
+        </div>
+        <div class="field-group">
+          <label>Sở thích</label>
+          <input type="text" id="f-introHobbies" data-key="introHobbies" placeholder="Viết lách, nhiếp ảnh, podcast..." />
+        </div>
+        <div class="field-group">
+          <label>Vai trò / Bio ngắn</label>
+          <input type="text" id="f-introBio" data-key="introBio" placeholder="Học sinh / Sinh viên" />
+        </div>
+        <h3 style="margin:24px 0 12px;color:var(--pink-main)">4 sở thích</h3>
+        <div class="field-group">
+          <label>Viết — mô tả</label>
+          <input type="text" id="f-hobbyViet" data-key="hobbyViet" />
+        </div>
+        <div class="field-group">
+          <label>Chụp — mô tả</label>
+          <input type="text" id="f-hobbyChup" data-key="hobbyChup" />
+        </div>
+        <div class="field-group">
+          <label>Nói — mô tả</label>
+          <input type="text" id="f-hobbyNoi" data-key="hobbyNoi" />
+        </div>
+        <div class="field-group">
+          <label>Tarot — mô tả</label>
+          <input type="text" id="f-hobbyTarot" data-key="hobbyTarot" />
+        </div>
+        <button class="btn-save" data-panel="intro">💾 Lưu Giới Thiệu</button>
+      </div>
+
+      <!-- BLOG PANEL -->
+      <div class="admin-panel" id="panel-blog">
+        <h2 class="panel-title">✍️ Quản lý Blog</h2>
+        <button class="btn-add" id="btnAddPost"><i class="fas fa-plus"></i> Thêm bài viết mới</button>
+        <div class="posts-list" id="postsList"></div>
+        <div class="post-form hidden" id="postForm">
+          <h3 id="postFormTitle">Bài viết mới</h3>
+          <div class="field-group">
+            <label>Hình bài viết</label>
+            <div class="upload-row">
+              <input type="text" id="pf-img" placeholder="URL ảnh..." />
+              <label class="btn-upload" for="postImgUpload"><i class="fas fa-upload"></i> Upload</label>
+              <input type="file" id="postImgUpload" accept="image/*" style="display:none" />
+            </div>
+            <img id="postImgPreview" class="img-preview" src="" alt="" />
+          </div>
+          <div class="field-group">
+            <label>Tag</label>
+            <input type="text" id="pf-tag" placeholder="Life / Study / Travel..." />
+          </div>
+          <div class="field-group">
+            <label>Tiêu đề</label>
+            <input type="text" id="pf-title" />
+          </div>
+          <div class="field-group">
+            <label>Tóm tắt</label>
+            <textarea id="pf-summary" rows="3"></textarea>
+          </div>
+          <div class="field-group">
+            <label>Nội dung đầy đủ</label>
+            <textarea id="pf-content" rows="8"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-save" id="btnSavePost">💾 Lưu bài viết</button>
+            <button class="btn-cancel" id="btnCancelPost">Hủy</button>
+          </div>
+          <input type="hidden" id="pf-id" value="" />
+        </div>
+      </div>
+
+      <!-- PHOTOS PANEL -->
+      <div class="admin-panel" id="panel-photos">
+        <h2 class="panel-title">📷 Quản lý Hình Chụp</h2>
+        <div class="field-group">
+          <label>Thêm ảnh</label>
+          <div class="upload-row">
+            <input type="text" id="ph-url" placeholder="URL ảnh..." />
+            <label class="btn-upload" for="photoUpload"><i class="fas fa-upload"></i> Upload</label>
+            <input type="file" id="photoUpload" accept="image/*" multiple style="display:none" />
+          </div>
+          <input type="text" id="ph-caption" placeholder="Caption cho ảnh..." style="margin-top:8px;" />
+          <button class="btn-add" id="btnAddPhoto" style="margin-top:8px;"><i class="fas fa-plus"></i> Thêm ảnh</button>
+        </div>
+        <div class="photos-grid" id="photosGrid"></div>
+      </div>
+
+      <!-- PODCAST PANEL -->
+      <div class="admin-panel" id="panel-podcast">
+        <h2 class="panel-title">🎙️ Quản lý Podcast</h2>
+        <button class="btn-add" id="btnAddEpisode"><i class="fas fa-plus"></i> Thêm tập mới</button>
+        <div class="posts-list" id="episodeList"></div>
+        <div class="post-form hidden" id="episodeForm">
+          <h3 id="epFormTitle">Tập mới</h3>
+          <div class="field-group">
+            <label>Thumbnail</label>
+            <div class="upload-row">
+              <input type="text" id="ep-img" placeholder="URL ảnh..." />
+              <label class="btn-upload" for="epImgUpload"><i class="fas fa-upload"></i> Upload</label>
+              <input type="file" id="epImgUpload" accept="image/*" style="display:none" />
+            </div>
+            <img id="epImgPreview" class="img-preview" src="" alt="" />
+          </div>
+          <div class="field-group">
+            <label>Tiêu đề tập</label>
+            <input type="text" id="ep-title" placeholder="Tập 1: ..." />
+          </div>
+          <div class="field-group">
+            <label>Mô tả ngắn</label>
+            <textarea id="ep-desc" rows="3"></textarea>
+          </div>
+          <div class="field-group">
+            <label>Link nghe (Spotify / YouTube...)</label>
+            <input type="url" id="ep-link" placeholder="https://..." />
+          </div>
+          <div class="form-actions">
+            <button class="btn-save" id="btnSaveEpisode">💾 Lưu tập</button>
+            <button class="btn-cancel" id="btnCancelEpisode">Hủy</button>
+          </div>
+          <input type="hidden" id="ep-id" value="" />
+        </div>
+      </div>
+
+      <!-- CONTACT PANEL -->
+      <div class="admin-panel" id="panel-contact">
+        <h2 class="panel-title">💌 Cài đặt Liên Hệ</h2>
+        <div class="field-group">
+          <label>Email hiển thị</label>
+          <input type="text" id="f-contactEmail" data-key="contactEmail" placeholder="✉️ phuongthao@email.com" />
+        </div>
+        <div class="field-group">
+          <label>Địa chỉ</label>
+          <input type="text" id="f-contactLocation" data-key="contactLocation" placeholder="📍 Hồ Chí Minh, Việt Nam" />
+        </div>
+        <div class="field-group">
+          <label>Link Facebook</label>
+          <input type="url" id="f-socialFb" data-key="socialFb" placeholder="https://facebook.com/..." />
+        </div>
+        <div class="field-group">
+          <label>Link Instagram</label>
+          <input type="url" id="f-socialIg" data-key="socialIg" placeholder="https://instagram.com/..." />
+        </div>
+        <div class="field-group">
+          <label>Link TikTok</label>
+          <input type="url" id="f-socialTtk" data-key="socialTtk" placeholder="https://tiktok.com/@..." />
+        </div>
+        <button class="btn-save" data-panel="contact">💾 Lưu Liên Hệ</button>
+      </div>
+
+      <!-- SETTINGS PANEL -->
+      <div class="admin-panel" id="panel-settings">
+        <h2 class="panel-title">⚙️ Cài Đặt</h2>
+        <div class="field-group">
+          <label>Đổi mật khẩu admin</label>
+          <input type="password" id="f-oldPass" placeholder="Mật khẩu hiện tại..." />
+          <input type="password" id="f-newPass" placeholder="Mật khẩu mới..." style="margin-top:8px;" />
+          <input type="password" id="f-newPass2" placeholder="Nhập lại mật khẩu mới..." style="margin-top:8px;" />
+          <p class="login-error hidden" id="passError"></p>
+          <button class="btn-save" id="btnChangePass" style="margin-top:12px;">🔒 Đổi mật khẩu</button>
+        </div>
+        <hr style="margin:32px 0;border-color:#f0eaf4;" />
+        <div class="field-group">
+          <label style="color:#c0392b;">Xóa toàn bộ dữ liệu</label>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px;">Thao tác này không thể hoàn tác!</p>
+          <button class="btn-danger" id="btnClearData">🗑️ Xóa tất cả dữ liệu</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+  <script src="admin.js"></script>
+</body>
+</html>

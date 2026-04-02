@@ -173,6 +173,12 @@ function updateAdminUI() {
       bar.querySelector('.admin-bar-toggle').addEventListener('click', () => {
         bar.classList.toggle('expanded');
       });
+      // Click anywhere on bar (except buttons) to toggle
+      bar.addEventListener('click', (e) => {
+        if (e.target === bar || e.target.closest('.admin-bar-label')) {
+          bar.classList.toggle('expanded');
+        }
+      });
       document.getElementById('btnLogout').addEventListener('click', () => {
         localStorage.removeItem(ADMIN_KEY);
         bar.remove();

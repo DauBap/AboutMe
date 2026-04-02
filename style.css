@@ -5104,6 +5104,7 @@ img.img-clickable { cursor: zoom-in; }
 
   /* Bottom nav — show on mobile */
   .bottom-nav { display: flex; }
+  .bn-item[data-bn="contact"] { display: none; }
   /* Hide hamburger — bottom nav replaces it */
   .hamburger { display: none !important; }
   /* Add padding so content isn't hidden behind bottom nav */

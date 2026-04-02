@@ -13,15 +13,30 @@ function getPass() {
   return localStorage.getItem(PASS_KEY) || DEFAULT_PASS;
 }
 
-/*  Apply stored content to the page 
-   Every element with [data-field] gets its text/href
-   filled in from localStorage on load.               */
+const DEFAULT_INTRO_ROWS = [
+  { icon: '📍', label: 'Quê quán', value: 'Hồ Chí Minh, Việt Nam' },
+  { icon: '💖', label: 'Sở thích', value: 'Viết lách, nhiếp ảnh, podcast, tarot' },
+  { icon: '🎓', label: 'Vai trò', value: 'Học sinh / Sinh viên' }
+];
+
+function renderIntroRows(rows) {
+  const container = document.getElementById('introInfoRows');
+  if (!container) return;
+  container.innerHTML = rows.map(r => `
+    <div class="info-row">
+      <span class="info-icon">${r.icon}</span>
+      <span class="info-label">${r.label}</span>
+      <span class="info-value">${r.value}</span>
+    </div>`).join('');
+}
+
+/*  Apply stored content  */
 async function applyStoredContent() {
   const cfg = await db.getConfig();
 
   const fields = [
     'heroSub', 'heroName', 'heroSlogan',
-    'introName', 'introSlogan', 'introHometown', 'introHobbies', 'introBio',
+    'introName', 'introSlogan',
     'contactEmail', 'contactLocation'
   ];
   fields.forEach(key => {
@@ -49,6 +64,10 @@ async function applyStoredContent() {
 
   const cover = document.getElementById('heroCover');
   if (cfg.heroBg && cover) cover.style.backgroundImage = `url('${cfg.heroBg}')`;
+
+  // Render dynamic intro rows
+  const rows = cfg.intro_rows ? JSON.parse(cfg.intro_rows) : DEFAULT_INTRO_ROWS;
+  renderIntroRows(rows);
 }
 
 /*  Header scroll behaviour  */
@@ -182,10 +201,14 @@ function updateAdminUI() {
         });
       });
     }
+    const introEditBtn = document.getElementById('introEditBtn');
+    if (introEditBtn) introEditBtn.classList.remove('hidden');
   } else {
     if (bar) bar.remove();
     if (coverBtn)  coverBtn.classList.remove('visible');
     if (avatarBtn) avatarBtn.classList.remove('visible');
+    const introEditBtn = document.getElementById('introEditBtn');
+    if (introEditBtn) introEditBtn.classList.add('hidden');
   }
 }
 
@@ -975,6 +998,82 @@ function initPageRouter() {
   });
 }
 
+function initIntroEditor() {
+  const overlay = document.getElementById('introEditorOverlay');
+  if (!overlay) return;
+
+  document.getElementById('introEditBtn').addEventListener('click', async () => {
+    const cfg = await db.getConfig();
+    document.getElementById('ie-name').value = cfg.introName || document.getElementById('introName').textContent;
+    document.getElementById('ie-slogan').value = cfg.introSlogan || document.getElementById('introSlogan').textContent;
+    const rows = cfg.intro_rows ? JSON.parse(cfg.intro_rows) : DEFAULT_INTRO_ROWS;
+    renderIeRows(rows);
+    openEditor('introEditorOverlay');
+  });
+
+  function renderIeRows(rows) {
+    const list = document.getElementById('ie-rows-list');
+    list.innerHTML = rows.map((r, i) => `
+      <div class="ie-row-item" data-i="${i}">
+        <input type="text" placeholder="Icon" value="${r.icon}" class="ie-icon" />
+        <input type="text" placeholder="Nhãn" value="${r.label}" class="ie-label" />
+        <input type="text" placeholder="Giá trị" value="${r.value}" class="ie-value" />
+        <button class="ie-row-del" data-i="${i}"><i class="fas fa-trash"></i></button>
+      </div>`).join('');
+    list.querySelectorAll('.ie-row-del').forEach(btn => {
+      btn.addEventListener('click', () => btn.closest('.ie-row-item').remove());
+    });
+  }
+
+  document.getElementById('ie-add-row').addEventListener('click', () => {
+    const list = document.getElementById('ie-rows-list');
+    const div = document.createElement('div');
+    div.className = 'ie-row-item';
+    div.innerHTML = `
+      <input type="text" placeholder="Icon" class="ie-icon" />
+      <input type="text" placeholder="Nhãn" class="ie-label" />
+      <input type="text" placeholder="Giá trị" class="ie-value" />
+      <button class="ie-row-del"><i class="fas fa-trash"></i></button>`;
+    div.querySelector('.ie-row-del').addEventListener('click', () => div.remove());
+    list.appendChild(div);
+  });
+
+  document.getElementById('introEditorClose').addEventListener('click', () => closeEditor('introEditorOverlay'));
+  document.getElementById('introEditorCancel').addEventListener('click', () => closeEditor('introEditorOverlay'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeEditor('introEditorOverlay'); });
+
+  document.getElementById('introEditorSave').addEventListener('click', async () => {
+    const saveBtn = document.getElementById('introEditorSave');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+    try {
+      const name   = document.getElementById('ie-name').value.trim();
+      const slogan = document.getElementById('ie-slogan').value.trim();
+      const rows = [...document.querySelectorAll('#ie-rows-list .ie-row-item')].map(row => ({
+        icon:  row.querySelector('.ie-icon').value.trim(),
+        label: row.querySelector('.ie-label').value.trim(),
+        value: row.querySelector('.ie-value').value.trim(),
+      })).filter(r => r.label || r.value);
+
+      await Promise.all([
+        db.setConfig('introName', name),
+        db.setConfig('introSlogan', slogan),
+        db.setConfig('intro_rows', JSON.stringify(rows)),
+      ]);
+
+      if (name) document.getElementById('introName').textContent = name;
+      if (slogan) document.getElementById('introSlogan').textContent = slogan;
+      renderIntroRows(rows);
+      closeEditor('introEditorOverlay');
+    } catch (err) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu';
+    }
+  });
+}
+
 /*  Init  */
 document.addEventListener('DOMContentLoaded', () => {
   applyStoredContent();
@@ -990,4 +1089,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initPhotoEditor();
   initPodcastEditor();
   initImageViewer();
+  initIntroEditor();
 });

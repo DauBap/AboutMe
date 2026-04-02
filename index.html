@@ -78,25 +78,12 @@
 
         <!-- Text -->
         <div class="intro-text">
-          <h2 class="intro-fullname" id="introName" data-field="introName">Phương Thảo</h2>
-          <p class="intro-slogan" id="introSlogan" data-field="introSlogan">Chia sẻ những điều mình yêu thích 🌸</p>
-          <div class="info-rows">
-            <div class="info-row">
-              <span class="info-icon">📍</span>
-              <span class="info-label">Quê quán</span>
-              <span class="info-value" id="introHometown" data-field="introHometown">Hồ Chí Minh, Việt Nam</span>
-            </div>
-            <div class="info-row">
-              <span class="info-icon">💖</span>
-              <span class="info-label">Sở thích</span>
-              <span class="info-value" id="introHobbies" data-field="introHobbies">Viết lách, nhiếp ảnh, podcast, tarot</span>
-            </div>
-            <div class="info-row">
-              <span class="info-icon">🎓</span>
-              <span class="info-label">Vai trò</span>
-              <span class="info-value" id="introBio" data-field="introBio">Học sinh / Sinh viên</span>
-            </div>
+          <div class="intro-text-header">
+            <h2 class="intro-fullname" id="introName" data-field="introName">Phương Thảo</h2>
+            <button class="intro-edit-btn hidden" id="introEditBtn" title="Chỉnh sửa giới thiệu"><i class="fas fa-pen"></i></button>
           </div>
+          <p class="intro-slogan" id="introSlogan" data-field="introSlogan">Chia sẻ những điều mình yêu thích 🌸</p>
+          <div class="info-rows" id="introInfoRows"></div>
         </div>
       </div>
 
@@ -277,6 +264,29 @@
       <div class="editor-footer">
         <button class="btn-editor-cancel" id="podcastEditorCancel">Huỷ</button>
         <button class="btn-editor-save" id="podcastEditorSave"><i class="fas fa-save"></i> Lưu video</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== INTRO EDITOR MODAL ===================== -->
+  <div class="editor-overlay hidden" id="introEditorOverlay">
+    <div class="editor-modal" id="introEditorModal">
+      <div class="editor-header">
+        <h3>Chỉnh sửa Giới Thiệu</h3>
+        <button class="editor-close" id="introEditorClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="editor-body">
+        <label class="editor-label">Tên hiển thị</label>
+        <input class="editor-input" type="text" id="ie-name" placeholder="Tên của bạn" />
+        <label class="editor-label">Slogan / mô tả ngắn</label>
+        <input class="editor-input" type="text" id="ie-slogan" placeholder="Chia sẻ những điều mình yêu thích..." />
+        <label class="editor-label">Các dòng thông tin</label>
+        <div id="ie-rows-list"></div>
+        <button class="btn-add-row" id="ie-add-row"><i class="fas fa-plus"></i> Thêm dòng</button>
+      </div>
+      <div class="editor-footer">
+        <button class="editor-btn-cancel" id="introEditorCancel">Hủy</button>
+        <button class="editor-btn-save" id="introEditorSave"><i class="fas fa-save"></i> Lưu</button>
       </div>
     </div>
   </div>

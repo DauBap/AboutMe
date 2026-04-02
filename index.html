@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
-<body>
+<body class="page-loading">
 
   <!-- ===================== HEADER / NAV ===================== -->
   <header class="site-header" id="siteHeader">
@@ -51,9 +51,8 @@
     <div class="hero-overlay"></div>
     <!-- Nội dung chính giữa -->
     <div class="hero-content">
-      <p class="hero-sub" id="heroSub" data-field="heroSub">student ✦ dreamer ✦ creator</p>
-      <h1 class="hero-name" id="heroName" data-field="heroName">Phương Thảo</h1>
-      <p class="hero-slogan" id="heroSlogan" data-field="heroSlogan">Chia sẻ những điều mình yêu thích 🌸</p>
+              <p class="hero-sub" id="heroSub" data-field="heroSub">✦ be with this ✦</p>
+      <h1 class="hero-name" id="heroName" data-field="heroName">not Phương Thảo</h1>
       <a href="#gioi-thieu" class="hero-cta scroll-link">Khám phá ↓</a>
     </div>
     <!-- Scroll indicator -->
@@ -79,10 +78,10 @@
         <!-- Text -->
         <div class="intro-text">
           <div class="intro-text-header">
-            <h2 class="intro-fullname" id="introName" data-field="introName">Phương Thảo</h2>
+            <h2 class="intro-fullname" id="introName" data-field="introName">not Phương Thảo</h2>
             <button class="intro-edit-btn hidden" id="introEditBtn" title="Chỉnh sửa giới thiệu"><i class="fas fa-pen"></i></button>
           </div>
-          <p class="intro-slogan" id="introSlogan" data-field="introSlogan">Chia sẻ những điều mình yêu thích 🌸</p>
+          <p class="intro-slogan" id="introSlogan" data-field="introSlogan">dreamer · writer · creator</p>
           <div class="info-rows" id="introInfoRows"></div>
         </div>
       </div>
@@ -117,7 +116,7 @@
 
   <!-- ===================== FOOTER ===================== -->
   <footer>
-    <p>Made with 💖 by <span class="sig-script" style="font-size:1.2rem">Phương Thảo</span> · 2026</p>
+    <p>Made with 💖 by <span class="sig-script" style="font-size:1.2rem">not Phương Thảo</span> · 2026</p>
   </footer>
   </div><!-- /#mainView -->
 
@@ -270,25 +269,60 @@
 
   <!-- ===================== INTRO EDITOR MODAL ===================== -->
   <div class="editor-overlay hidden" id="introEditorOverlay">
-    <div class="editor-modal" id="introEditorModal">
-      <div class="editor-header">
-        <h3>Chỉnh sửa Giới Thiệu</h3>
-        <button class="editor-close" id="introEditorClose"><i class="fas fa-times"></i></button>
+    <div class="ie-modal">
+
+      <!-- Header -->
+      <div class="ie-modal-header">
+        <div class="ie-modal-header-icon"><i class="fas fa-user-edit"></i></div>
+        <div>
+          <div class="ie-modal-title">Chỉnh sửa Giới Thiệu</div>
+          <div class="ie-modal-sub">Thay đổi sẽ hiển thị ngay trên trang</div>
+        </div>
+        <button class="ie-close-btn" id="introEditorClose"><i class="fas fa-times"></i></button>
       </div>
-      <div class="editor-body">
-        <label class="editor-label">Tên hiển thị</label>
-        <input class="editor-input" type="text" id="ie-name" placeholder="Tên của bạn" />
-        <label class="editor-label">Slogan / mô tả ngắn</label>
-        <input class="editor-input" type="text" id="ie-slogan" placeholder="Chia sẻ những điều mình yêu thích..." />
-        <label class="editor-label">Các dòng thông tin</label>
-        <div id="ie-rows-list"></div>
-        <button class="btn-add-row" id="ie-add-row"><i class="fas fa-plus"></i> Thêm dòng</button>
+
+      <!-- Body -->
+      <div class="ie-modal-body">
+
+        <!-- Name + Slogan -->
+        <div class="ie-section">
+          <div class="ie-section-label"><i class="fas fa-signature"></i> Tên hiển thị</div>
+          <input class="ie-text-input" type="text" id="ie-name" placeholder="Nhập tên của bạn..." />
+          <div class="ie-section-label" style="margin-top:10px"><i class="fas fa-quote-left"></i> Slogan</div>
+          <input class="ie-text-input" type="text" id="ie-slogan" placeholder="dreamer · writer · creator" />
+        </div>
+
+        <!-- Info rows -->
+        <div class="ie-section">
+          <div class="ie-section-label"><i class="fas fa-list-ul"></i> Các dòng thông tin</div>
+          <div class="ie-rows-hint">Mỗi dòng gồm icon emoji, nhãn và nội dung</div>
+          <div id="ie-rows-list"></div>
+          <button class="ie-add-btn" id="ie-add-row">
+            <i class="fas fa-plus-circle"></i> Thêm dòng mới
+          </button>
+        </div>
+
       </div>
-      <div class="editor-footer">
-        <button class="editor-btn-cancel" id="introEditorCancel">Hủy</button>
-        <button class="editor-btn-save" id="introEditorSave"><i class="fas fa-save"></i> Lưu</button>
+
+      <!-- Footer -->
+      <div class="ie-modal-footer">
+        <button class="ie-btn-cancel" id="introEditorCancel">Hủy</button>
+        <button class="ie-btn-save" id="introEditorSave">
+          <i class="fas fa-check"></i> Lưu thay đổi
+        </button>
       </div>
+
     </div>
+  </div>
+
+  <!-- ===================== EMOJI PICKER ===================== -->
+  <div class="emoji-picker hidden" id="emojiPicker">
+    <div class="ep-search-wrap">
+      <i class="fas fa-search ep-search-icon"></i>
+      <input type="text" class="ep-search" id="epSearch" placeholder="Tìm emoji..." autocomplete="off" />
+    </div>
+    <div class="ep-cats" id="epCats"></div>
+    <div class="ep-grid" id="epGrid"></div>
   </div>
 
   <!-- ===================== CROP MODAL ===================== -->

@@ -25,8 +25,10 @@ function renderIntroRows(rows) {
   container.innerHTML = rows.map(r => `
     <div class="info-row">
       <span class="info-icon">${r.icon}</span>
-      <span class="info-label">${r.label}</span>
-      <span class="info-value">${r.value}</span>
+      <div class="info-text">
+        <span class="info-label">${r.label}</span>
+        <span class="info-value">${r.value}</span>
+      </div>
     </div>`).join('');
 }
 
@@ -68,6 +70,10 @@ async function applyStoredContent() {
   // Render dynamic intro rows
   const rows = cfg.intro_rows ? JSON.parse(cfg.intro_rows) : DEFAULT_INTRO_ROWS;
   renderIntroRows(rows);
+
+  // Remove loading state — reveal content
+  document.body.classList.remove('page-loading');
+  document.body.classList.add('page-loaded');
 }
 
 /*  Header scroll behaviour  */
@@ -998,6 +1004,116 @@ function initPageRouter() {
   });
 }
 
+/* ══════════════════════════════════════════════════
+   EMOJI PICKER
+══════════════════════════════════════════════════ */
+const EMOJI_DATA = {
+  '😊': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','😎','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','😈','👿'],
+  '👍': ['👋','🤚','✋','🖖','🤙','💪','🦾','🖐️','☝️','👆','👇','👈','👉','👍','👎','✊','👊','🤛','🤜','🤞','✌️','🤟','🤘','👌','🤌','🤏','👏','🙌','🫶','🤲','🙏','💅','🫰','🫵'],
+  '❤️': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✨','⭐','🌟','💫','⚡','🔥','🌈','☀️','🌙','🌻','🌸','🌺','🌹','🌷'],
+  '🌍': ['🌍','🌎','🌏','🌐','🗺️','🏔️','⛰️','🌋','🗻','🏕️','🏖️','🏜️','🏝️','🏞️','🏟️','🏛️','🏗️','🏘️','🏚️','🏠','🏡','🏢','🏣','🏤','🏥','🏦','🏨','🏩','🏪','🏫','🏬','🏭','🏯','🏰','💒','🗼','🗽'],
+  '🎵': ['🎵','🎶','🎸','🎹','🥁','🎷','🎺','🎻','🪕','🎤','🎧','🎼','🎹','🎮','🕹️','🎲','♟️','🧩','🎭','🎨','🖼️','🎬','📽️','🎞️','📺','📻','📷','📸','🔭','🔬','💡','🕯️','🪔'],
+  '🍎': ['🍎','🍊','🍋','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🧄','🧅','🥔','🍠','🥐','🥖','🍞','🥨','🥯','🧀','🥚','🍳','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🌮','🌯','🥙','🧆','🥚','🍱','🍘','🍙','🍚','🍛','🍜','🍝','🍠','🍢','🥮','🍡','🥟','🦪','🍣','🍤','🍙','🧁','🍰','🎂','☕','🍵','🧃','🥤','🧋','🍺','🥂'],
+  '✈️': ['✈️','🚀','🛸','🚁','🛺','🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🚲','🛴','🛹','🛼','🚏','🛣️','🛤️','🚢','⛵','🚤','🛥️','🛳️','⛴️','🚤','🚂','🚆','🚇','🚈','🚉','🚊','🚝','🚞','🚋'],
+  '📚': ['📚','📖','📝','✏️','🖊️','🖋️','📌','📍','📎','🖇️','📏','📐','✂️','🗃️','🗂️','🗄️','📦','📫','📪','📬','📭','📮','🗳️','📥','📤','📧','💬','💭','🗨️','💡','🔍','🔎','🔐','🔑','🗝️','🔒','🔓','🔏','🏷️','📋','📊','📈','📉','🗒️','🗓️','📅','📆','🔖'],
+  '🌱': ['🌱','🌿','☘️','🍀','🎋','🍃','🍂','🍁','🪺','🪸','🌾','🌵','🌲','🌳','🌴','🪵','🪨','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','🌛','🌜','🌚','🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔','🌙','🌟','⭐','🌠','☁️','⛅','🌤️'],
+};
+
+const EP_CAT_ICONS = { '😊':'😊','👍':'✋','❤️':'❤️','🌍':'🌍','🎵':'🎵','🍎':'🍎','✈️':'✈️','📚':'📚','🌱':'🌱' };
+
+let _epTarget = null;
+
+function initEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  const grid   = document.getElementById('epGrid');
+  const cats   = document.getElementById('epCats');
+  const search = document.getElementById('epSearch');
+  if (!picker) return;
+
+  let activeCat = Object.keys(EMOJI_DATA)[0];
+  const allEmojis = Object.values(EMOJI_DATA).flat();
+
+  // Build category buttons
+  Object.entries(EP_CAT_ICONS).forEach(([key, icon]) => {
+    const btn = document.createElement('button');
+    btn.className = 'ep-cat-btn' + (key === activeCat ? ' active' : '');
+    btn.textContent = icon;
+    btn.title = key;
+    btn.addEventListener('click', () => {
+      activeCat = key;
+      cats.querySelectorAll('.ep-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      search.value = '';
+      renderGrid(EMOJI_DATA[key]);
+    });
+    cats.appendChild(btn);
+  });
+
+  function renderGrid(emojis) {
+    grid.innerHTML = '';
+    emojis.forEach(em => {
+      const btn = document.createElement('button');
+      btn.className = 'ep-item';
+      btn.textContent = em;
+      btn.addEventListener('click', () => {
+        if (_epTarget) {
+          _epTarget.value = em;
+          _epTarget.dispatchEvent(new Event('input'));
+        }
+        closePicker();
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim();
+    if (!q) {
+      renderGrid(EMOJI_DATA[activeCat]);
+    } else {
+      renderGrid(allEmojis.filter(e => e.includes(q)));
+    }
+  });
+
+  renderGrid(EMOJI_DATA[activeCat]);
+
+  // Close on outside click
+  document.addEventListener('click', e => {
+    if (!picker.contains(e.target) && !e.target.classList.contains('ie-row-icon-input')) {
+      closePicker();
+    }
+  }, true);
+}
+
+function openEmojiPicker(targetInput) {
+  const picker = document.getElementById('emojiPicker');
+  if (!picker) return;
+  _epTarget = targetInput;
+
+  // Position below the input
+  const rect = targetInput.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const pickerH = 340;
+
+  picker.style.left = Math.min(rect.left, window.innerWidth - 308) + 'px';
+  if (spaceBelow >= pickerH + 8) {
+    picker.style.top  = (rect.bottom + window.scrollY + 6) + 'px';
+    picker.style.bottom = 'auto';
+  } else {
+    picker.style.top  = (rect.top + window.scrollY - pickerH - 6) + 'px';
+    picker.style.bottom = 'auto';
+  }
+
+  picker.classList.remove('hidden');
+  document.getElementById('epSearch').focus();
+}
+
+function closePicker() {
+  const picker = document.getElementById('emojiPicker');
+  if (picker) picker.classList.add('hidden');
+  _epTarget = null;
+}
+
 function initIntroEditor() {
   const overlay = document.getElementById('introEditorOverlay');
   if (!overlay) return;
@@ -1011,31 +1127,35 @@ function initIntroEditor() {
     openEditor('introEditorOverlay');
   });
 
+  function makeRowCard(icon, label, value) {
+    const div = document.createElement('div');
+    div.className = 'ie-row-card';
+    div.innerHTML = `
+      <input type="text" class="ie-row-icon-input ie-icon" value="${icon}" placeholder="😊" maxlength="4" readonly />
+      <div class="ie-row-fields">
+        <input type="text" class="ie-row-field-input ie-label" value="${label}" placeholder="Nhãn (VD: Quê quán)" />
+        <input type="text" class="ie-row-field-input ie-value" value="${value}" placeholder="Nội dung..." />
+      </div>
+      <button class="ie-row-del-btn" title="Xóa dòng"><i class="fas fa-trash-alt"></i></button>`;
+    div.querySelector('.ie-row-del-btn').addEventListener('click', () => div.remove());
+    div.querySelector('.ie-row-icon-input').addEventListener('click', function(e) {
+      e.stopPropagation();
+      openEmojiPicker(this);
+    });
+    return div;
+  }
+
   function renderIeRows(rows) {
     const list = document.getElementById('ie-rows-list');
-    list.innerHTML = rows.map((r, i) => `
-      <div class="ie-row-item" data-i="${i}">
-        <input type="text" placeholder="Icon" value="${r.icon}" class="ie-icon" />
-        <input type="text" placeholder="Nhãn" value="${r.label}" class="ie-label" />
-        <input type="text" placeholder="Giá trị" value="${r.value}" class="ie-value" />
-        <button class="ie-row-del" data-i="${i}"><i class="fas fa-trash"></i></button>
-      </div>`).join('');
-    list.querySelectorAll('.ie-row-del').forEach(btn => {
-      btn.addEventListener('click', () => btn.closest('.ie-row-item').remove());
-    });
+    list.innerHTML = '';
+    rows.forEach(r => list.appendChild(makeRowCard(r.icon, r.label, r.value)));
   }
 
   document.getElementById('ie-add-row').addEventListener('click', () => {
     const list = document.getElementById('ie-rows-list');
-    const div = document.createElement('div');
-    div.className = 'ie-row-item';
-    div.innerHTML = `
-      <input type="text" placeholder="Icon" class="ie-icon" />
-      <input type="text" placeholder="Nhãn" class="ie-label" />
-      <input type="text" placeholder="Giá trị" class="ie-value" />
-      <button class="ie-row-del"><i class="fas fa-trash"></i></button>`;
-    div.querySelector('.ie-row-del').addEventListener('click', () => div.remove());
-    list.appendChild(div);
+    const card = makeRowCard('', '', '');
+    list.appendChild(card);
+    card.querySelector('.ie-row-icon-input').focus();
   });
 
   document.getElementById('introEditorClose').addEventListener('click', () => closeEditor('introEditorOverlay'));
@@ -1049,10 +1169,10 @@ function initIntroEditor() {
     try {
       const name   = document.getElementById('ie-name').value.trim();
       const slogan = document.getElementById('ie-slogan').value.trim();
-      const rows = [...document.querySelectorAll('#ie-rows-list .ie-row-item')].map(row => ({
-        icon:  row.querySelector('.ie-icon').value.trim(),
-        label: row.querySelector('.ie-label').value.trim(),
-        value: row.querySelector('.ie-value').value.trim(),
+      const rows = [...document.querySelectorAll('#ie-rows-list .ie-row-card')].map(card => ({
+        icon:  card.querySelector('.ie-icon').value.trim(),
+        label: card.querySelector('.ie-label').value.trim(),
+        value: card.querySelector('.ie-value').value.trim(),
       })).filter(r => r.label || r.value);
 
       await Promise.all([
@@ -1061,7 +1181,7 @@ function initIntroEditor() {
         db.setConfig('intro_rows', JSON.stringify(rows)),
       ]);
 
-      if (name) document.getElementById('introName').textContent = name;
+      if (name)   document.getElementById('introName').textContent   = name;
       if (slogan) document.getElementById('introSlogan').textContent = slogan;
       renderIntroRows(rows);
       closeEditor('introEditorOverlay');
@@ -1069,7 +1189,7 @@ function initIntroEditor() {
       alert('Lỗi: ' + err.message);
     } finally {
       saveBtn.disabled = false;
-      saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu';
+      saveBtn.innerHTML = '<i class="fas fa-check"></i> Lưu thay đổi';
     }
   });
 }
@@ -1090,4 +1210,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initPodcastEditor();
   initImageViewer();
   initIntroEditor();
+  initEmojiPicker();
 });

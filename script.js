@@ -85,9 +85,18 @@ async function applyStoredContent() {
 function initHeaderScroll() {
   const header = document.getElementById('siteHeader');
   if (!header) return;
+  let lastY = window.scrollY;
   const onScroll = () => {
     if (document.body.classList.contains('on-subpage')) return;
-    header.classList.toggle('scrolled', window.scrollY > 50);
+    const y = window.scrollY;
+    header.classList.toggle('scrolled', y > 50);
+    // Hide on scroll down, reveal on scroll up
+    if (y > lastY && y > 80) {
+      header.classList.add('header-hidden');
+    } else {
+      header.classList.remove('header-hidden');
+    }
+    lastY = y;
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -156,10 +165,14 @@ function updateAdminUI() {
       bar = document.createElement('div');
       bar.id = 'adminFloatBar';
       bar.innerHTML = `
+        <button class="admin-bar-toggle" title="Admin menu"><i class="fas fa-lock-open"></i></button>
         <span class="admin-bar-label"><i class="fas fa-lock-open"></i> Admin</span>
         <button id="btnLogout" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
       `;
       document.body.appendChild(bar);
+      bar.querySelector('.admin-bar-toggle').addEventListener('click', () => {
+        bar.classList.toggle('expanded');
+      });
       document.getElementById('btnLogout').addEventListener('click', () => {
         localStorage.removeItem(ADMIN_KEY);
         bar.remove();
@@ -316,6 +329,7 @@ function openSubView(page) {
   document.querySelectorAll('[data-page]').forEach(a => {
     a.classList.toggle('active', a.dataset.page === page);
   });
+  document.querySelector('.bn-item[data-bn="home"]')?.classList.remove('active');
 }
 
 function closeSubView() {
@@ -327,6 +341,7 @@ function closeSubView() {
   document.body.classList.remove('on-subpage');
   currentPage = null;
   document.querySelectorAll('[data-page]').forEach(a => a.classList.remove('active'));
+  document.querySelector('.bn-item[data-bn="home"]')?.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'instant' });
   header.classList.toggle('scrolled', false);
 }

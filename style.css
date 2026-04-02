@@ -5097,7 +5097,7 @@ img.img-clickable { cursor: zoom-in; }
   .btn-send { width: 100%; justify-content: center; }
 
   /* IG grid — always 3 columns, full bleed to screen edges */
-  .ig-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; margin-left: -5%; margin-right: -5%; }
+  .ig-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; width: calc(100% + 10%); margin-left: -5%; margin-right: -5%; }
 
   /* Masonry — fix width on mobile */
   .masonry-grid { width: 100%; overflow: hidden; }

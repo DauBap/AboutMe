@@ -47,6 +47,18 @@ const db = {
     if (error) throw error;
   },
 
+  /* ── Photo Comments ── */
+  async getPhotoComments(photoId) {
+    const { data, error } = await sb.from('photo_comments').select('*').eq('photo_id', photoId).order('created_at', { ascending: true });
+    if (error) { console.error('getPhotoComments:', error.message); return []; }
+    return data || [];
+  },
+  async insertPhotoComment(c) {
+    const { data, error } = await sb.from('photo_comments').insert(c).select().single();
+    if (error) throw error;
+    return data;
+  },
+
   /* ── Episodes ── */
   async getEpisodes() {
     const { data, error } = await sb.from('episodes').select('*').order('created_at', { ascending: false });

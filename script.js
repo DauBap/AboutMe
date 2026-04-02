@@ -34,46 +34,51 @@ function renderIntroRows(rows) {
 
 /*  Apply stored content  */
 async function applyStoredContent() {
-  const cfg = await db.getConfig();
+  try {
+    const cfg = await db.getConfig();
 
-  const fields = [
-    'heroSub', 'heroName', 'heroSlogan',
-    'introName', 'introSlogan',
-    'contactEmail', 'contactLocation'
-  ];
-  fields.forEach(key => {
-    const el = document.querySelector(`[data-field="${key}"]`);
-    if (el && cfg[key]) el.textContent = cfg[key];
-  });
+    const fields = [
+      'heroSub', 'heroName', 'heroSlogan',
+      'introName', 'introSlogan',
+      'contactEmail', 'contactLocation'
+    ];
+    fields.forEach(key => {
+      const el = document.querySelector(`[data-field="${key}"]`);
+      if (el && cfg[key]) el.textContent = cfg[key];
+    });
 
-  ['socialFb', 'socialIg', 'socialTtk'].forEach(key => {
-    const el = document.getElementById(key);
-    if (el && cfg[key]) el.setAttribute('href', cfg[key]);
-  });
+    ['socialFb', 'socialIg', 'socialTtk'].forEach(key => {
+      const el = document.getElementById(key);
+      if (el && cfg[key]) el.setAttribute('href', cfg[key]);
+    });
 
-  const introAvatar      = document.getElementById('introAvatar');
-  const introPlaceholder = document.getElementById('introAvatarPlaceholder');
-  if (introAvatar && introPlaceholder) {
-    if (cfg.avatarUrl) {
-      introAvatar.src = cfg.avatarUrl;
-      introAvatar.classList.add('loaded');
-      introPlaceholder.classList.add('hidden');
-    } else {
-      introAvatar.classList.remove('loaded');
-      introPlaceholder.classList.remove('hidden');
+    const introAvatar      = document.getElementById('introAvatar');
+    const introPlaceholder = document.getElementById('introAvatarPlaceholder');
+    if (introAvatar && introPlaceholder) {
+      if (cfg.avatarUrl) {
+        introAvatar.src = cfg.avatarUrl;
+        introAvatar.classList.add('loaded');
+        introPlaceholder.classList.add('hidden');
+      } else {
+        introAvatar.classList.remove('loaded');
+        introPlaceholder.classList.remove('hidden');
+      }
     }
+
+    const cover = document.getElementById('heroCover');
+    if (cfg.heroBg && cover) cover.style.backgroundImage = `url('${cfg.heroBg}')`;
+
+    // Render dynamic intro rows
+    let rows = DEFAULT_INTRO_ROWS;
+    try { rows = cfg.intro_rows ? JSON.parse(cfg.intro_rows) : DEFAULT_INTRO_ROWS; } catch {}
+    renderIntroRows(rows);
+  } catch (err) {
+    console.error('applyStoredContent:', err);
+  } finally {
+    // Always reveal content regardless of errors
+    document.body.classList.remove('page-loading');
+    document.body.classList.add('page-loaded');
   }
-
-  const cover = document.getElementById('heroCover');
-  if (cfg.heroBg && cover) cover.style.backgroundImage = `url('${cfg.heroBg}')`;
-
-  // Render dynamic intro rows
-  const rows = cfg.intro_rows ? JSON.parse(cfg.intro_rows) : DEFAULT_INTRO_ROWS;
-  renderIntroRows(rows);
-
-  // Remove loading state — reveal content
-  document.body.classList.remove('page-loading');
-  document.body.classList.add('page-loaded');
 }
 
 /*  Header scroll behaviour  */
@@ -249,7 +254,8 @@ let currentPage       = null;
 let lightboxPhotos    = [];
 let lightboxIdx       = 0;
 let pendingPostImgFile  = null;
-let pendingPhotoImgFile = null;
+let pendingPhotoImgFile  = null;
+let pendingPhotoImgFiles = [];
 
 function skeletonCards(n, type) {
   let html = '';
@@ -337,6 +343,7 @@ async function renderBlogPage(container) {
   const posts = await db.getPosts();
   let html = '';
 
+  html += '<div class="blog-wrapper">';
   if (isAdmin()) {
     html += `<div class="subpage-admin-bar">
       <button class="btn-new-item" id="btnNewPost"><i class="fas fa-plus"></i> Bài viết mới</button>
@@ -345,6 +352,7 @@ async function renderBlogPage(container) {
 
   if (!posts.length) {
     html += `<div class="empty-state"><i class="fas fa-feather-alt"></i><p>Chưa có bài viết nào. Hãy quay lại sau nhé!</p></div>`;
+    html += '</div>';
     container.innerHTML = html;
     if (isAdmin()) document.getElementById('btnNewPost').addEventListener('click', () => openPostEditor());
     return;
@@ -372,7 +380,7 @@ async function renderBlogPage(container) {
       </div>` : ''}
     </article>`;
   });
-  html += '</div>';
+  html += '</div></div>';
   container.innerHTML = html;
 
   if (isAdmin()) {
@@ -435,11 +443,12 @@ function openArticle(post) {
   document.getElementById('articleDate').style.display = post.date ? '' : 'none';
   document.getElementById('articleTitle').textContent = post.title || '';
 
-  const content = (post.content || post.summary || '')
-    .split('\n\n')
-    .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
-  document.getElementById('articleContent').innerHTML = content;
+  // Render HTML content from Quill directly
+  const rawContent = post.content || post.summary || '';
+  const isHtml = /<[a-z][\s\S]*>/i.test(rawContent);
+  document.getElementById('articleContent').innerHTML = isHtml
+    ? rawContent
+    : rawContent.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
 
   overlay.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -456,6 +465,16 @@ function initArticleModal() {
 }
 
 /* ── Photos ───────────────────────────────────── */
+/* ── Photo album helper ── */
+function getImgArray(img) {
+  if (!img) return [];
+  try {
+    const parsed = JSON.parse(img);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
+  return [img];
+}
+
 async function renderPhotosPage(container) {
   const photos = await db.getPhotos();
   lightboxPhotos = photos;
@@ -476,9 +495,13 @@ async function renderPhotosPage(container) {
 
   html += '<div class="ig-grid">';
   photos.forEach((ph, i) => {
+    const imgs    = getImgArray(ph.img);
+    const thumb   = imgs[0] || '';
+    const isAlbum = imgs.length > 1;
     html += `<div class="ig-cell" data-id="${ph.id}" data-i="${i}">
-      <img src="${ph.img}" alt="${ph.caption || ''}" loading="lazy" />
-      <div class="ig-overlay"><i class="fas fa-expand-alt"></i>${ph.caption ? `<span class="ig-caption-peek">${ph.caption}</span>` : ''}</div>
+      <img src="${thumb}" alt="${ph.caption || ''}" loading="lazy" />
+      ${isAlbum ? `<span class="ig-album-badge"><i class="fas fa-clone"></i></span>` : ''}
+      <div class="ig-overlay"><i class="fas fa-expand-alt"></i>${ph.caption ? `<span class="ig-caption-peek">${escHtml(ph.caption)}</span>` : ''}</div>
       ${isAdmin() ? `<div class="ig-admin-actions"><button class="card-btn-edit" data-id="${ph.id}" title="Sửa"><i class="fas fa-pen"></i></button><button class="card-btn-del" data-id="${ph.id}" title="Xoá"><i class="fas fa-trash"></i></button></div>` : ''}
     </div>`;
   });
@@ -514,43 +537,190 @@ async function renderPhotosPage(container) {
   });
 }
 
-function openLightbox(i) {
+function fmtRelTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const diff = Date.now() - d;
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1)  return 'Vừa xong';
+  if (mins < 60) return `${mins} phút trước`;
+  if (hrs < 24)  return `${hrs} giờ trước`;
+  if (days < 7)  return `${days} ngày trước`;
+  return d.toLocaleDateString('vi-VN');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderLightboxComments(comments) {
+  const el = document.getElementById('lbComments');
+  if (!comments.length) {
+    el.innerHTML = '';
+    return;
+  }
+  const avatarSrc = document.getElementById('introAvatar')?.src || '';
+  el.innerHTML = comments.map(c => `
+    <div class="lb-cmt-item">
+      ${avatarSrc
+        ? `<img class="lb-cmt-avatar" src="${avatarSrc}" alt="" />`
+        : `<div class="lb-cmt-avatar-icon"><i class="fas fa-user"></i></div>`}
+      <div class="lb-cmt-body">
+        <span class="lb-cmt-author">${escHtml(c.author)}</span>
+        <span class="lb-cmt-text">${escHtml(c.content)}</span>
+        <span class="lb-cmt-time">${fmtRelTime(c.created_at)}</span>
+      </div>
+    </div>`).join('');
+}
+
+let albumIdx = 0; // current index within an album
+
+async function loadLightboxPhoto(i) {
   lightboxIdx = i;
+  albumIdx = 0;
   const ph = lightboxPhotos[i];
-  document.getElementById('lightboxImg').src = ph.img;
-  document.getElementById('lightboxCaption').textContent = ph.caption || '';
-  document.getElementById('lightboxCaptionWrap').classList.toggle('hidden', !ph.caption);
-  document.getElementById('lightboxCounter').textContent = `${i + 1} / ${lightboxPhotos.length}`;
-  // hide arrows if only 1 photo
+  const imgs = getImgArray(ph.img);
+
+  // Show image
+  document.getElementById('lightboxImg').src = imgs[0] || '';
+
+  // Album arrows + dots
+  const albumPrev = document.getElementById('lbAlbumPrev');
+  const albumNext = document.getElementById('lbAlbumNext');
+  const albumDots = document.getElementById('lbAlbumDots');
+
+  if (imgs.length > 1) {
+    albumPrev.classList.remove('hidden');
+    albumNext.classList.remove('hidden');
+    albumDots.classList.remove('hidden');
+    albumPrev.classList.add('disabled');
+    albumNext.classList.remove('disabled');
+    // Dots
+    albumDots.innerHTML = imgs.map((_, di) =>
+      `<span class="lb-album-dot${di === 0 ? ' active' : ''}"></span>`
+    ).join('');
+  } else {
+    albumPrev.classList.add('hidden');
+    albumNext.classList.add('hidden');
+    albumDots.classList.add('hidden');
+  }
+
+  // Album arrow click handlers (replace each time)
+  const goAlbum = (dir) => {
+    const newIdx = albumIdx + dir;
+    if (newIdx < 0 || newIdx >= imgs.length) return;
+    albumIdx = newIdx;
+    document.getElementById('lightboxImg').src = imgs[albumIdx];
+    albumPrev.classList.toggle('disabled', albumIdx === 0);
+    albumNext.classList.toggle('disabled', albumIdx === imgs.length - 1);
+    albumDots.querySelectorAll('.lb-album-dot').forEach((d, di) =>
+      d.classList.toggle('active', di === albumIdx));
+  };
+  albumPrev.onclick = () => goAlbum(-1);
+  albumNext.onclick = () => goAlbum(1);
+
+  // Caption
+  const captionEl = document.getElementById('lightboxCaption');
+  if (captionEl) {
+    captionEl.textContent = ph.caption || '';
+    captionEl.style.display = ph.caption ? '' : 'none';
+  }
+
+  // Between-post arrows — only show if multiple posts
   const showArrows = lightboxPhotos.length > 1;
   document.getElementById('lightboxPrev').style.display = showArrows ? '' : 'none';
   document.getElementById('lightboxNext').style.display = showArrows ? '' : 'none';
+
+  // Profile
+  const avatarSrc = document.getElementById('introAvatar')?.src || '';
+  const ownerName = document.querySelector('[data-field="introName"]')?.textContent || '';
+  const lbAvatar = document.getElementById('lbAvatar');
+  if (lbAvatar) lbAvatar.src = avatarSrc;
+  if (document.getElementById('lbName')) document.getElementById('lbName').textContent = ownerName;
+  if (document.getElementById('lbPostDate')) document.getElementById('lbPostDate').textContent = fmtRelTime(ph.created_at);
+
+  // Location
+  const lbLoc = document.getElementById('lbLocation');
+  const lbLocText = document.getElementById('lbLocationText');
+  if (lbLoc && lbLocText) {
+    if (ph.location) {
+      lbLocText.textContent = ph.location;
+      lbLoc.classList.remove('hidden');
+    } else {
+      lbLoc.classList.add('hidden');
+    }
+  }
+
+  // Load comments
+  const commentsEl = document.getElementById('lbComments');
+  commentsEl.innerHTML = '';
+  const comments = await db.getPhotoComments(ph.id);
+  renderLightboxComments(comments);
+
+  // Scroll reset
+  const scroll = document.getElementById('lbScroll');
+  if (scroll) scroll.scrollTop = 0;
+}
+
+function openLightbox(i) {
   document.getElementById('lightboxOverlay').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  loadLightboxPhoto(i);
 }
 
 function initLightbox() {
   const overlay = document.getElementById('lightboxOverlay');
   if (!overlay) return;
   const close = () => { overlay.classList.add('hidden'); document.body.style.overflow = ''; };
-  const go = d => {
-    lightboxIdx = (lightboxIdx + d + lightboxPhotos.length) % lightboxPhotos.length;
-    const ph = lightboxPhotos[lightboxIdx];
-    document.getElementById('lightboxImg').src = ph.img;
-    document.getElementById('lightboxCaption').textContent = ph.caption || '';
-    document.getElementById('lightboxCaptionWrap').classList.toggle('hidden', !ph.caption);
-    document.getElementById('lightboxCounter').textContent = `${lightboxIdx + 1} / ${lightboxPhotos.length}`;
-  };
+
   document.getElementById('lightboxClose').addEventListener('click', close);
-  // click on the dark backdrop (left side image area) to close
-  document.getElementById('lightboxBackdrop').addEventListener('click', close);
-  document.getElementById('lightboxPrev').addEventListener('click', () => go(-1));
-  document.getElementById('lightboxNext').addEventListener('click', () => go(1));
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  document.getElementById('lightboxPrev').addEventListener('click', () =>
+    loadLightboxPhoto((lightboxIdx - 1 + lightboxPhotos.length) % lightboxPhotos.length));
+  document.getElementById('lightboxNext').addEventListener('click', () =>
+    loadLightboxPhoto((lightboxIdx + 1) % lightboxPhotos.length));
+
   document.addEventListener('keydown', e => {
     if (overlay.classList.contains('hidden')) return;
     if (e.key === 'Escape')     close();
-    if (e.key === 'ArrowLeft')  go(-1);
-    if (e.key === 'ArrowRight') go(1);
+    if (e.key === 'ArrowLeft')  loadLightboxPhoto((lightboxIdx - 1 + lightboxPhotos.length) % lightboxPhotos.length);
+    if (e.key === 'ArrowRight') loadLightboxPhoto((lightboxIdx + 1) % lightboxPhotos.length);
+  });
+
+  // Show/hide comment form based on admin
+  const commentForm = document.querySelector('.lb-comment-form');
+  if (commentForm) commentForm.style.display = isAdmin() ? '' : 'none';
+
+  // Submit comment
+  const submit = async () => {
+    const name = document.querySelector('[data-field="introName"]')?.textContent?.trim() || 'Admin';
+    const text = (document.getElementById('lbCmtText').value || '').trim();
+    if (!text) { document.getElementById('lbCmtText').focus(); return; }
+    const btn = document.getElementById('lbCmtSubmit');
+    btn.disabled = true;
+    btn.textContent = '...';
+    try {
+      const ph = lightboxPhotos[lightboxIdx];
+      await db.insertPhotoComment({ photo_id: ph.id, author: name, content: text });
+      document.getElementById('lbCmtText').value = '';
+      const comments = await db.getPhotoComments(ph.id);
+      renderLightboxComments(comments);
+      // Scroll to bottom of comments
+      const scroll = document.getElementById('lbScroll');
+      if (scroll) scroll.scrollTop = scroll.scrollHeight;
+    } catch (err) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Đăng';
+    }
+  };
+
+  document.getElementById('lbCmtSubmit').addEventListener('click', submit);
+  document.getElementById('lbCmtText').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); submit(); }
   });
 }
 
@@ -703,6 +873,32 @@ function blobToFile(blob, filename) {
 }
 
 /* ── Post editor ── */
+let _quillEditor = null;
+
+function getQuill() {
+  if (!_quillEditor) {
+    _quillEditor = new Quill('#pf-content-editor', {
+      theme: 'snow',
+      placeholder: 'Viết nội dung bài ở đây...',
+      modules: {
+        toolbar: [
+          [{ header: [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ color: [] }, { background: [] }],
+          [{ font: [] }],
+          [{ size: ['small', false, 'large', 'huge'] }],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ align: [] }],
+          ['blockquote', 'code-block'],
+          ['link', 'image'],
+          ['clean'],
+        ],
+      },
+    });
+  }
+  return _quillEditor;
+}
+
 function openPostEditor(post = null) {
   pendingPostImgFile = null;
   const p = post || {};
@@ -712,7 +908,9 @@ function openPostEditor(post = null) {
   document.getElementById('pf-tag').value     = p.tag     || '';
   document.getElementById('pf-title').value   = p.title   || '';
   document.getElementById('pf-summary').value = p.summary || '';
-  document.getElementById('pf-content').value = p.content || '';
+  // Load content into Quill
+  const quill = getQuill();
+  quill.root.innerHTML = p.content || '';
   const prev = document.getElementById('pf-img-preview');
   if (p.img) { prev.src = p.img; prev.classList.remove('hidden'); }
   else       { prev.src = ''; prev.classList.add('hidden'); }
@@ -765,7 +963,7 @@ function initPostEditor() {
         tag:     document.getElementById('pf-tag').value.trim(),
         title,
         summary: document.getElementById('pf-summary').value.trim(),
-        content: document.getElementById('pf-content').value.trim(),
+        content: getQuill().root.innerHTML,
         date:    new Date().toLocaleDateString('vi-VN')
       };
       if (id === -1) await db.insertPost(post);
@@ -784,37 +982,178 @@ function initPostEditor() {
 /* ── Photo editor ── */
 function openPhotoEditor(photo = null) {
   pendingPhotoImgFile = null;
+  pendingPhotoImgFiles = [];
   const p = photo || {};
   document.getElementById('photoEditorTitle').textContent = photo ? 'Sửa ảnh' : 'Ảnh mới';
   document.getElementById('ph-id').value      = photo ? photo.id : -1;
   document.getElementById('ph-img').value     = p.img     || '';
-  document.getElementById('ph-caption').value = p.caption || '';
-  const prev = document.getElementById('ph-img-preview');
-  if (p.img) { prev.src = p.img; prev.classList.remove('hidden'); }
-  else       { prev.src = ''; prev.classList.add('hidden'); }
+  document.getElementById('ph-caption').value  = p.caption  || '';
+  document.getElementById('ph-location').value  = p.location || '';
+  const prev     = document.getElementById('ph-img-preview');
+  const previews = document.getElementById('ph-img-previews');
+  const dropzone = document.getElementById('phDropzone');
+  const previewState = document.getElementById('phPreviewState');
+  if (previews) previews.innerHTML = '';
+
+  if (p.img) {
+    const imgs = getImgArray(p.img);
+    if (imgs.length > 1) {
+      // Album: show thumbnails grid
+      prev.src = ''; prev.classList.add('hidden');
+      imgs.forEach(url => {
+        const img = document.createElement('img');
+        img.src = url; img.className = 'multi-preview-thumb';
+        previews.appendChild(img);
+      });
+    } else {
+      prev.src = imgs[0]; prev.classList.remove('hidden');
+    }
+    dropzone.classList.add('hidden');
+    previewState.classList.remove('hidden');
+  } else {
+    prev.src = ''; prev.classList.add('hidden');
+    dropzone.classList.remove('hidden');
+    previewState.classList.add('hidden');
+  }
   openEditor('photoEditorOverlay');
 }
 
 function initPhotoEditor() {
-  const overlay = document.getElementById('photoEditorOverlay');
+  const overlay    = document.getElementById('photoEditorOverlay');
   if (!overlay) return;
 
-  document.getElementById('ph-img').addEventListener('input', e => {
-    const v = e.target.value.trim();
-    const prev = document.getElementById('ph-img-preview');
-    prev.src = v; prev.classList.toggle('hidden', !v);
+  const dropzone     = document.getElementById('phDropzone');
+  const previewState = document.getElementById('phPreviewState');
+  const fileInput    = document.getElementById('ph-img-file');
+  const prev         = document.getElementById('ph-img-preview');
+  const previews     = document.getElementById('ph-img-previews');
+
+  function showPreviewState() {
+    dropzone.classList.add('hidden');
+    previewState.classList.remove('hidden');
+  }
+  function showDropzone() {
+    previewState.classList.add('hidden');
+    dropzone.classList.remove('hidden');
+    prev.src = ''; prev.classList.add('hidden');
+    previews.innerHTML = '';
+    document.getElementById('ph-img').value = '';
+    document.getElementById('ph-caption').value  = '';
+    document.getElementById('ph-location').value  = '';
+    pendingPhotoImgFile = null;
+    pendingPhotoImgFiles = [];
+  }
+
+  // Drag-and-drop on drop zone
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    handleFileSelection(files);
   });
 
-  document.getElementById('ph-img-file').addEventListener('change', e => {
-    const file = e.target.files[0]; if (!file) return;
-    document.getElementById('ph-img-file').value = '';
-    openCropper(file, NaN, blob => {
-      pendingPhotoImgFile = blobToFile(blob, file.name);
+  function handleFileSelection(files) {
+    previews.innerHTML = '';
+    pendingPhotoImgFiles = [];
+    if (files.length === 1) {
+      openCropper(files[0], NaN, blob => {
+        pendingPhotoImgFile = blobToFile(blob, files[0].name);
+        pendingPhotoImgFiles = [];
+        document.getElementById('ph-img').value = '';
+        prev.src = URL.createObjectURL(blob);
+        prev.classList.remove('hidden');
+        previews.innerHTML = '';
+        showPreviewState();
+      });
+    } else {
+      pendingPhotoImgFile = null;
+      prev.src = ''; prev.classList.add('hidden');
       document.getElementById('ph-img').value = '';
-      const prev = document.getElementById('ph-img-preview');
-      prev.src = URL.createObjectURL(blob);
-      prev.classList.remove('hidden');
-    });
+      for (const file of files) {
+        pendingPhotoImgFiles.push(file);
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.className = 'multi-preview-thumb';
+        previews.appendChild(img);
+      }
+      showPreviewState();
+    }
+  }
+
+  fileInput.addEventListener('change', e => {
+    const files = Array.from(e.target.files);
+    e.target.value = '';
+    if (!files.length) return;
+    handleFileSelection(files);
+  });
+
+  // ── Location search (Nominatim) ──
+  const locInput    = document.getElementById('ph-location');
+  const locDropdown = document.getElementById('phLocationDropdown');
+  const locSpinner  = document.getElementById('phLocationSpinner');
+  const locClear    = document.getElementById('phLocationClear');
+  let locDebounce   = null;
+
+  function hideLocDropdown() {
+    locDropdown.classList.add('hidden');
+    locDropdown.innerHTML = '';
+  }
+
+  locInput.addEventListener('input', () => {
+    const q = locInput.value.trim();
+    locClear.classList.toggle('hidden', !q);
+    clearTimeout(locDebounce);
+    if (q.length < 2) { hideLocDropdown(); locSpinner.classList.add('hidden'); return; }
+    locSpinner.classList.remove('hidden');
+    locDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=6&addressdetails=1`,
+          { headers: { 'Accept-Language': 'vi,en' } }
+        );
+        const data = await res.json();
+        locSpinner.classList.add('hidden');
+        locDropdown.innerHTML = '';
+        if (!data.length) {
+          locDropdown.innerHTML = '<li class="phl-no-result">Không tìm thấy địa điểm</li>';
+        } else {
+          data.forEach(place => {
+            const li = document.createElement('li');
+            const parts = place.display_name.split(',');
+            const main  = parts.slice(0, 2).join(',').trim();
+            const sub   = parts.slice(2, 4).join(',').trim();
+            li.innerHTML = `<i class="fas fa-map-marker-alt"></i><span><strong>${main}</strong>${sub ? `<br><small style="color:#888">${sub}</small>` : ''}</span>`;
+            li.addEventListener('mousedown', e => {
+              e.preventDefault();
+              locInput.value = main;
+              locClear.classList.remove('hidden');
+              hideLocDropdown();
+            });
+            locDropdown.appendChild(li);
+          });
+        }
+        locDropdown.classList.remove('hidden');
+      } catch {
+        locSpinner.classList.add('hidden');
+      }
+    }, 400);
+  });
+
+  locClear.addEventListener('click', () => {
+    locInput.value = '';
+    locClear.classList.add('hidden');
+    hideLocDropdown();
+    locInput.focus();
+  });
+
+  locInput.addEventListener('blur', () => setTimeout(hideLocDropdown, 150));
+
+  // "Đổi ảnh" button — go back to drop zone
+  document.getElementById('phChangeBtn').addEventListener('click', () => {
+    showDropzone();
   });
 
   document.getElementById('photoEditorClose').addEventListener('click',  () => closeEditor('photoEditorOverlay'));
@@ -829,13 +1168,34 @@ function initPhotoEditor() {
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
 
     try {
+      // Multi-file upload → 1 row with JSON array
+      if (pendingPhotoImgFiles && pendingPhotoImgFiles.length > 0) {
+        const caption  = document.getElementById('ph-caption').value.trim();
+        const location = document.getElementById('ph-location').value.trim();
+        const urls = [];
+        for (let i = 0; i < pendingPhotoImgFiles.length; i++) {
+          saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu ${i + 1}/${pendingPhotoImgFiles.length}...`;
+          urls.push(await db.uploadImage(pendingPhotoImgFiles[i], 'photos'));
+        }
+        const imgValue = urls.length === 1 ? urls[0] : JSON.stringify(urls);
+        await db.insertPhoto({ img: imgValue, caption, location });
+        pendingPhotoImgFiles = [];
+        closeEditor('photoEditorOverlay');
+        renderSubPage('photos');
+        return;
+      }
+
       let imgUrl = document.getElementById('ph-img').value.trim();
       if (pendingPhotoImgFile) {
         imgUrl = await db.uploadImage(pendingPhotoImgFile, 'photos');
         pendingPhotoImgFile = null;
       }
       if (!imgUrl) { alert('Vui lòng chọn ảnh!'); return; }
-      const photo = { img: imgUrl, caption: document.getElementById('ph-caption').value.trim() };
+      const photo = {
+        img:      imgUrl,
+        caption:  document.getElementById('ph-caption').value.trim(),
+        location: document.getElementById('ph-location').value.trim()
+      };
       if (id === -1) await db.insertPhoto(photo);
       else           await db.updatePhoto(id, photo);
       closeEditor('photoEditorOverlay');
@@ -913,7 +1273,7 @@ const IMG_VIEWER_EXCLUDE = [
   '#cropOverlay', '#imgViewerOverlay', '#lightboxOverlay',
   '.editor-modal', '.img-viewer-img', '.pf-img-preview',
   '.ph-img-preview', '#epYtThumb', '.intro-avatar', '#articleImg',
-  '.yt-thumb img', '.hero-cover'
+  '.yt-thumb img', '.hero-cover', '.ig-cell'
 ];
 
 function initImageViewer() {
@@ -996,10 +1356,11 @@ function initPageRouter() {
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && currentPage &&
-        document.getElementById('articleOverlay')?.classList.contains('hidden') &&
-        document.getElementById('lightboxOverlay')?.classList.contains('hidden')) {
-      closeSubView();
+    if (e.key === 'Escape' && currentPage) {
+      const articleOpen  = !document.getElementById('articleOverlay')?.classList.contains('hidden');
+      const lightboxOpen = !document.getElementById('lightboxOverlay')?.classList.contains('hidden');
+      // Only close subview if no modal is on top
+      if (!articleOpen && !lightboxOpen) return;
     }
   });
 }
@@ -1196,7 +1557,7 @@ function initIntroEditor() {
 
 /*  Init  */
 document.addEventListener('DOMContentLoaded', () => {
-  applyStoredContent();
+  applyStoredContent().catch(err => console.error('applyStoredContent failed:', err));
   updateAdminUI();
   initHeaderScroll();
   initHamburger();

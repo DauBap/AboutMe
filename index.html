@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>notphuongthao</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" />
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -129,12 +130,17 @@
       <div class="article-modal" id="articleModal">
         <button class="article-close-btn" id="articleClose"><i class="fas fa-times"></i></button>
         <img class="article-hero-img hidden" id="articleImg" src="" alt="" />
-        <div class="article-body">
+        <!-- Sticky title header -->
+        <div class="article-sticky-header" id="articleStickyHeader">
           <div class="article-meta">
             <span class="article-tag" id="articleTag"></span>
             <span class="article-date" id="articleDate"></span>
           </div>
           <h2 class="article-title" id="articleTitle"></h2>
+          <hr class="article-divider" />
+        </div>
+        <!-- Scrollable content -->
+        <div class="article-body">
           <div class="article-content" id="articleContent"></div>
         </div>
       </div>
@@ -142,20 +148,49 @@
 
     <!-- Lightbox (Instagram style) -->
     <div class="lightbox-overlay hidden" id="lightboxOverlay">
+      <!-- Screen-edge arrows -->
+      <button class="lightbox-arrow-screen left" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+      <button class="lightbox-arrow-screen right" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
       <div class="lightbox-dialog">
-        <!-- Image side -->
-        <div class="lightbox-img-side" id="lightboxBackdrop">
-          <button class="lightbox-close-btn" id="lightboxClose"><i class="fas fa-times"></i></button>
-          <button class="lightbox-arrow left" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+        <!-- Left: image -->
+        <div class="lightbox-img-side" id="lightboxImgSide">
           <img class="lightbox-img" id="lightboxImg" src="" alt="" />
-          <button class="lightbox-arrow right" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
+          <!-- Album internal arrows -->
+          <button class="lb-album-arrow left hidden" id="lbAlbumPrev"><i class="fas fa-chevron-left"></i></button>
+          <button class="lb-album-arrow right hidden" id="lbAlbumNext"><i class="fas fa-chevron-right"></i></button>
+          <!-- Album dot indicators -->
+          <div class="lb-album-dots hidden" id="lbAlbumDots"></div>
         </div>
-        <!-- Caption panel -->
-        <div class="lightbox-panel" id="lightboxCaptionWrap">
-          <div class="lightbox-panel-header">
-            <span class="lightbox-counter" id="lightboxCounter"></span>
+        <!-- Right: Instagram-style panel -->
+        <div class="lightbox-panel" id="lightboxPanel">
+          <!-- Header: profile + close -->
+          <div class="lb-header">
+            <div class="lb-profile">
+              <img class="lb-avatar" id="lbAvatar" src="" alt="" />
+              <div class="lb-profile-info">
+                <span class="lb-name" id="lbName"></span>
+                <span class="lb-postdate" id="lbPostDate"></span>
+                <span class="lb-location hidden" id="lbLocation"><i class="fas fa-map-marker-alt"></i><span id="lbLocationText"></span></span>
+              </div>
+            </div>
+            <button class="lb-close-btn" id="lightboxClose"><i class="fas fa-times"></i></button>
           </div>
-          <p class="lightbox-caption" id="lightboxCaption"></p>
+          <div class="lb-caption-wrap" id="lbCaptionWrap">
+            <span class="lb-caption" id="lightboxCaption"></span>
+          </div>
+          <div class="lb-divider"></div>
+          <!-- Scrollable: comments -->
+          <div class="lb-scroll" id="lbScroll">
+            <div class="lb-comments-list" id="lbComments"></div>
+          </div>
+          <div class="lb-divider"></div>
+          <!-- Comment form -->
+          <div class="lb-comment-form">
+            <div class="lb-cmt-row">
+              <input class="lb-cmt-text-input" id="lbCmtText" type="text" placeholder="Thêm bình luận..." maxlength="300" />
+              <button class="lb-cmt-submit" id="lbCmtSubmit">Đăng</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -196,8 +231,8 @@
           <textarea id="pf-summary" rows="2" placeholder="Mô tả ngắn..."></textarea>
         </div>
         <div class="editor-field">
-          <label>Nội dung <span class="field-hint">dòng trống = đoạn mới</span></label>
-          <textarea id="pf-content" rows="8" placeholder="Viết nội dung bài ở đây..."></textarea>
+          <label>Nội dung <span class="field-hint">hỗ trợ định dạng phồng phú</span></label>
+          <div id="pf-content-editor" class="quill-editor-wrap"></div>
         </div>
       </div>
       <div class="editor-footer">
@@ -209,33 +244,56 @@
 
   <!-- ===================== PHOTO EDITOR MODAL ===================== -->
   <div class="editor-overlay hidden" id="photoEditorOverlay">
-    <div class="editor-modal" id="photoEditorModal">
-      <div class="editor-header">
+    <div class="editor-modal photo-editor-modal" id="photoEditorModal">
+      <div class="editor-header photo-editor-header">
+        <span></span>
         <h3 id="photoEditorTitle">Ảnh mới</h3>
         <button class="editor-close" id="photoEditorClose"><i class="fas fa-times"></i></button>
       </div>
-      <div class="editor-body">
+
+      <!-- Drop zone (shown when no image selected) -->
+      <div class="ph-dropzone" id="phDropzone">
+        <div class="ph-dropzone-icon">
+          <svg aria-label="Biểu tượng thể hiện file phương tiện, chẳng hạn như hình ảnh hoặc video" fill="currentColor" height="77" role="img" viewBox="0 0 97.6 77.3" width="96"><title>Biểu tượng thể hiện file phương tiện, chẳng hạn như hình ảnh hoặc video</title><path d="M16.3 24h.3c2.8-.2 4.9-2.6 4.8-5.4-.2-2.8-2.6-4.9-5.4-4.8s-4.9 2.6-4.8 5.4c.1 2.7 2.4 4.8 5.1 4.8zm-2.4-7.2c.5-.6 1.3-1 2.1-1h.2c1.7 0 3.1 1.4 3.1 3.1 0 1.7-1.4 3.1-3.1 3.1-1.7 0-3.1-1.4-3.1-3.1 0-.8.3-1.5.8-2.1z" fill="currentColor"></path><path d="M84.7 18.4 58 16.9l-.2-3c-.3-5.7-5.2-10.1-11-9.8L12.9 6c-5.7.3-10.1 5.3-9.8 11L5 51v.8c.7 5.2 5.1 9.1 10.3 9.1h.6l21.7-1.2v.6c-.3 5.7 4 10.7 9.8 11l34 2h.6c5.5 0 10.1-4.3 10.4-9.8l2-34c.4-5.8-4-10.7-9.7-11.1zM7.2 10.8C8.7 9.1 10.8 8.1 13 8l34-1.9c4.6-.3 8.6 3.3 8.9 7.9l.2 2.8-5.3-.3c-5.7-.3-10.7 4-11 9.8l-.6 9.5-9.5 10.7c-.2.3-.6.4-1 .5-.4 0-.7-.1-1-.4l-7.8-7c-1.4-1.3-3.5-1.1-4.8.3L7 49 5.2 17c-.2-2.3.6-4.5 2-6.2zm8.7 48c-4.3.2-8.1-2.8-8.8-7.1l9.4-10.5c.2-.3.6-.4 1-.5.4 0 .7.1 1 .4l7.8 7c.7.6 1.6.9 2.5.9.9 0 1.7-.5 2.3-1.1l7.8-8.8-1.1 18.6-21.9 1.1zm76.5-29.5-2 34c-.3 4.6-4.3 8.2-8.9 7.9l-34-2c-4.6-.3-8.2-4.3-7.9-8.9l2-34c.3-4.4 3.9-7.9 8.4-7.9h.5l34 2c4.7.3 8.2 4.3 7.9 8.9z" fill="currentColor"></path><path d="M78.2 41.6 61.3 30.5c-2.1-1.4-4.9-.8-6.2 1.3-.4.7-.7 1.4-.7 2.2l-1.2 20.1c-.1 2.5 1.7 4.6 4.2 4.8h.3c.7 0 1.4-.2 2-.5l18-9c2.2-1.1 3.1-3.8 2-6-.4-.7-.9-1.3-1.5-1.8zm-1.4 6-18 9c-.4.2-.8.3-1.3.3-.4 0-.9-.2-1.2-.4-.7-.5-1.2-1.3-1.1-2.2l1.2-20.1c.1-.9.6-1.7 1.4-2.1.8-.4 1.7-.3 2.5.1L77 43.3c1.2.8 1.5 2.3.7 3.4-.2.4-.5.7-.9.9z" fill="currentColor"></path></svg>
+        </div>
+        <h3 class="ph-dropzone-text">Kéo ảnh và video vào đây</h3>
+        <label class="ph-select-btn">
+          Chọn từ máy tính
+          <input type="file" id="ph-img-file" accept="image/*" multiple style="display:none" />
+        </label>
+      </div>
+
+      <!-- Preview state (shown after image selected) -->
+      <div class="ph-preview-state hidden" id="phPreviewState">
         <input type="hidden" id="ph-id" value="-1" />
-        <div class="editor-field">
-          <label>Ảnh <span class="field-hint">URL hoặc upload</span></label>
-          <div class="img-input-row">
-            <input type="text" id="ph-img" placeholder="https://..." />
-            <label class="btn-upload" title="Upload ảnh">
-              <i class="fas fa-upload"></i>
-              <input type="file" id="ph-img-file" accept="image/*" style="display:none" />
-            </label>
+        <input type="hidden" id="ph-img" value="" />
+        <div class="ph-preview-grid">
+          <div class="ph-preview-media">
+            <img id="ph-img-preview" class="ph-main-preview hidden" src="" alt="" />
+            <div id="ph-img-previews" class="img-multi-previews"></div>
           </div>
-          <img id="ph-img-preview" class="img-preview hidden" src="" alt="" />
+          <div class="ph-caption-panel">
+            <textarea id="ph-caption" rows="4" placeholder="Viết chú thích..."></textarea>
+            <div class="ph-location-row">
+              <i class="fas fa-map-marker-alt ph-location-icon"></i>
+              <div class="ph-location-search-wrap">
+                <input type="text" id="ph-location" placeholder="Tìm vị trí..." autocomplete="off" />
+                <span class="ph-location-spinner hidden" id="phLocationSpinner"><i class="fas fa-circle-notch fa-spin"></i></span>
+                <span class="ph-location-clear hidden" id="phLocationClear"><i class="fas fa-times"></i></span>
+                <ul class="ph-location-dropdown hidden" id="phLocationDropdown"></ul>
+              </div>
+            </div>
+            <button class="ph-change-media-btn" id="phChangeBtn">
+              <i class="fas fa-images"></i> Đổi ảnh
+            </button>
+          </div>
         </div>
-        <div class="editor-field">
-          <label>Caption <span class="field-hint">không bắt buộc</span></label>
-          <textarea id="ph-caption" rows="3" placeholder="Mô tả ảnh..."></textarea>
+        <div class="editor-footer photo-editor-footer">
+          <button class="btn-editor-cancel" id="photoEditorCancel">Huỷ</button>
+          <button class="btn-editor-save" id="photoEditorSave"><i class="fas fa-save"></i> Lưu ảnh</button>
         </div>
       </div>
-      <div class="editor-footer">
-        <button class="btn-editor-cancel" id="photoEditorCancel">Huỷ</button>
-        <button class="btn-editor-save" id="photoEditorSave"><i class="fas fa-save"></i> Lưu ảnh</button>
-      </div>
+
     </div>
   </div>
 
@@ -342,7 +400,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.js"></script>
   <!-- ===================== IMAGE VIEWER ===================== -->
   <div class="img-viewer-overlay hidden" id="imgViewerOverlay">
     <button class="img-viewer-close" id="imgViewerClose"><i class="fas fa-times"></i></button>
@@ -365,6 +422,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="supabase.js"></script>
   <script src="script.js"></script>

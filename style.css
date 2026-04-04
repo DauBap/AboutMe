@@ -3792,14 +3792,14 @@ body.page-loaded .intro-layout {
     */
 .ig-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   width: 100%;
 }
 
 .ig-cell {
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 2 / 3;
   overflow: hidden;
   cursor: pointer;
   background: #1a1020;

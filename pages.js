@@ -29,6 +29,8 @@ if (document.getElementById('blogGrid') !== null) {
     posts.forEach((p, i) => {
       const card = document.createElement('article');
       card.className = 'blog-card';
+      card.setAttribute('data-i', i);
+      card.setAttribute('data-post', encodeURIComponent(JSON.stringify(p)));
       card.innerHTML = `
         ${p.img ? `<div class="blog-card-img" style="background-image:url('${p.img}')"></div>` : ''}
         <div class="blog-card-body">
@@ -44,8 +46,17 @@ if (document.getElementById('blogGrid') !== null) {
     });
 
     grid.addEventListener('click', e => {
-      const btn = e.target.closest('.btn-read');
+      // Nếu click vào admin button, bỏ qua
+      if (e.target.closest('.card-admin-actions')) return;
+      
+      // Tìm blog card gần nhất
+      const card = e.target.closest('.blog-card');
+      if (!card) return;
+      
+      // Tìm index của post
+      const btn = card.querySelector('.btn-read');
       if (!btn) return;
+      
       const post = posts[parseInt(btn.dataset.i)];
       openArticle(post);
     });

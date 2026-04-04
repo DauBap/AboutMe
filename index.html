@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" />
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Raleway:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Petit+Formal+Script&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body class="page-loading">
@@ -19,7 +19,7 @@
     <nav class="header-nav" id="headerNav">
       <a href="#gioi-thieu" class="nav-item scroll-link">Giới Thiệu</a>
       <a href="#" class="nav-item" data-page="blog">Blog</a>
-      <a href="#" class="nav-item" data-page="photos">Hình Chụp</a>
+      <a href="#" class="nav-item" data-page="photos">Hình tui chụp</a>
       <a href="#" class="nav-item" data-page="podcast">Podcast</a>
       <a href="https://tarot-meopring.vercel.app/" target="_blank" class="nav-item">Tarot</a>
       <a href="#lien-he" class="nav-item scroll-link">Liên Hệ</a>
@@ -81,7 +81,7 @@
     <!-- Nội dung chính giữa -->
     <div class="hero-content">
               <p class="hero-sub" id="heroSub" data-field="heroSub">✦ be with this ✦</p>
-      <h1 class="hero-name" id="heroName" data-field="heroName">not Phương Thảo</h1>
+      <h1 class="hero-name" id="heroName" data-field="heroName">not Phuong Thao</h1>
       <a href="#gioi-thieu" class="hero-cta scroll-link">Khám phá ↓</a>
     </div>
     <!-- Scroll indicator -->
@@ -118,30 +118,134 @@
     </div>
   </section>
 
+  <!-- ===================== LATEST BLOG ===================== -->
+  <section class="section-latest-blog" id="latest-blog">
+    <div class="section-inner">
+      <span class="section-tag">✦ Blog Mới Nhất</span>
+      <div class="latest-blog-layout">
+        <!-- Content (Left) -->
+        <div class="latest-blog-content">
+          <h2 class="latest-blog-title" id="latestBlogTitle">Bài viết mới nhất</h2>
+          <p class="latest-blog-summary" id="latestBlogSummary">Chưa có bài viết nào</p>
+          <div class="latest-blog-meta">
+            <span class="latest-blog-date" id="latestBlogDate"></span>
+            <a href="#" class="btn-read-more" id="latestBlogBtn">🌸 Đọc tiếp →</a>
+          </div>
+        </div>
+        <!-- Image (Right) -->
+        <div class="latest-blog-img-wrap">
+          <img class="latest-blog-img" id="latestBlogImg" src="" alt="Blog" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LATEST PHOTOS ===================== -->
+  <section class="section-latest-photos" id="latest-photos">
+    <div class="section-inner">
+      <span class="section-tag">✦ Ảnh Mới Nhất</span>
+      <div class="latest-photos-layout">
+        <!-- Image (Left) -->
+        <div class="latest-photos-img-wrap">
+          <img class="latest-photos-img" id="latestPhotosImg" src="" alt="Photo" />
+        </div>
+        <!-- Content (Right) -->
+        <div class="latest-photos-content">
+          <h2 class="latest-photos-title" id="latestPhotosTitle">Hình ảnh mới nhất</h2>
+          <p class="latest-photos-summary" id="latestPhotosSummary">Chưa có hình ảnh nào</p>
+          <div class="latest-photos-meta">
+            <span class="latest-photos-date" id="latestPhotosDate"></span>
+            <a href="#" class="btn-view-more" id="latestPhotosBtn">Xem thêm →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== LIÊN HỆ ===================== -->
   <section class="section-contact" id="lien-he">
     <div class="section-inner">
       <span class="section-tag">✦ Liên Hệ</span>
       <h2 class="section-title">Kết nối với mình nhé!</h2>
       <div class="contact-layout">
-        <form class="contact-form" id="contactForm">
-          <input type="text"  placeholder="Tên của bạn 🌸" required />
-          <input type="email" placeholder="Email của bạn 💌" required />
-          <textarea rows="4"  placeholder="Lời nhắn cho mình... ✍️" required></textarea>
+        <form class="contact-form" id="contactForm" action="https://formspree.io/f/xreooplg" method="POST" novalidate>
+          <input type="text" name="name" placeholder="Tên của bạn 🌸" />
+          <input type="email" name="email" placeholder="Email của bạn 💌" />
+          <textarea rows="4" name="message" placeholder="Lời nhắn cho mình... ✍️"></textarea>
           <button type="submit" class="btn-send">Gửi lời nhắn 💖</button>
         </form>
         <div class="contact-info">
-          <p id="contactEmail" data-field="contactEmail">✉️ phuongthao@email.com</p>
-          <p id="contactLocation" data-field="contactLocation">📍 Hồ Chí Minh, Việt Nam</p>
-          <div class="socials-row">
-            <a href="#" id="socialFb"  data-field="socialFb"  class="soc-btn"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" id="socialIg"  data-field="socialIg"  class="soc-btn"><i class="fab fa-instagram"></i></a>
-            <a href="#" id="socialTtk" data-field="socialTtk" class="soc-btn"><i class="fab fa-tiktok"></i></a>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; position: relative;">
+            <div style="flex: 1;">
+              <p id="contactEmail" data-field="contactEmail">✉️ phuongthao@email.com</p>
+              <p id="contactLocation" data-field="contactLocation">📍 Hồ Chí Minh, Việt Nam</p>
+              <div class="socials-row">
+                <a href="#" id="socialFb"  data-field="socialFb"  class="soc-btn"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" id="socialIg"  data-field="socialIg"  class="soc-btn"><i class="fab fa-instagram"></i></a>
+                <a href="#" id="socialTtk" data-field="socialTtk" class="soc-btn"><i class="fab fa-tiktok"></i></a>
+              </div>
+            </div>
+            <button id="btnEditContact" class="intro-edit-btn" title="Chỉnh sửa thông tin">
+              <i class="fas fa-pen"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- ===================== CONTACT EDITOR ===================== -->
+  <div class="editor-overlay hidden" id="contactEditorOverlay">
+    <div class="ie-modal">
+      <!-- Header -->
+      <div class="ie-modal-header">
+        <div class="ie-modal-header-icon"><i class="fas fa-phone-alt"></i></div>
+        <div>
+          <div class="ie-modal-title">Chỉnh sửa Liên Hệ</div>
+          <div class="ie-modal-sub">Cập nhật thông tin liên hệ của bạn</div>
+        </div>
+        <button class="ie-close-btn" id="contactEditorClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <!-- Body -->
+      <div class="ie-modal-body">
+        <div class="ie-section">
+          <div class="ie-section-label"><i class="fas fa-envelope"></i> Email</div>
+          <input class="ie-text-input" type="email" id="ce-email" placeholder="✉️ email@example.com" />
+          
+          <div class="ie-section-label" style="margin-top:16px"><i class="fas fa-map-marker-alt"></i> Địa chỉ</div>
+          <input class="ie-text-input" type="text" id="ce-location" placeholder="📍 Thành phố, Quốc gia" />
+          
+          <div class="ie-section-label" style="margin-top:16px"><i class="fab fa-facebook"></i> Link Facebook</div>
+          <input class="ie-text-input" type="url" id="ce-fb" placeholder="https://facebook.com/..." />
+          
+          <div class="ie-section-label" style="margin-top:16px"><i class="fab fa-instagram"></i> Link Instagram</div>
+          <input class="ie-text-input" type="url" id="ce-ig" placeholder="https://instagram.com/..." />
+          
+          <div class="ie-section-label" style="margin-top:16px"><i class="fab fa-tiktok"></i> Link TikTok</div>
+          <input class="ie-text-input" type="url" id="ce-ttk" placeholder="https://tiktok.com/@..." />
+        </div>
+
+        <!-- Custom contact fields -->
+        <div class="ie-section">
+          <div class="ie-section-label"><i class="fas fa-link"></i> Thêm liên hệ khác</div>
+          <div class="ie-rows-hint">Thêm các trường liên hệ khác như Telegram, Zalo, Website...</div>
+          <div id="ce-fields-list"></div>
+          <button class="ie-add-btn" id="ce-add-field">
+            <i class="fas fa-plus-circle"></i> Thêm trường mới
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="ie-modal-footer">
+        <button class="ie-btn-cancel" id="contactEditorCancel">Hủy</button>
+        <button class="ie-btn-save" id="contactEditorSave">
+          <i class="fas fa-check"></i> Lưu thay đổi
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===================== FOOTER ===================== -->
   <footer>

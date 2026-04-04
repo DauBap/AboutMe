@@ -19,6 +19,25 @@ const DEFAULT_INTRO_ROWS = [
   { icon: '🎓', label: 'Vai trò', value: 'Học sinh / Sinh viên' }
 ];
 
+/* ── Toast Notification System ── */
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+  toast.addEventListener('click', () => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  });
+}
+
+
+
 function renderIntroRows(rows) {
   const container = document.getElementById('introInfoRows');
   if (!container) return;
@@ -52,6 +71,16 @@ async function applyStoredContent() {
       if (el && cfg[key]) el.setAttribute('href', cfg[key]);
     });
 
+    // Load custom contact fields
+    if (cfg.contactCustomFields) {
+      try {
+        const customFields = JSON.parse(cfg.contactCustomFields);
+        localStorage.setItem('contactCustomFields', JSON.stringify(customFields));
+      } catch (e) {
+        console.log('Could not parse custom fields:', e);
+      }
+    }
+
     const introAvatar      = document.getElementById('introAvatar');
     const introPlaceholder = document.getElementById('introAvatarPlaceholder');
     if (introAvatar && introPlaceholder) {
@@ -81,22 +110,134 @@ async function applyStoredContent() {
   }
 }
 
+/*  Load latest blog post from Supabase  */
+async function loadLatestBlog() {
+  try {
+    const posts = await db.getPosts();
+    if (posts.length === 0) return; // No posts
+
+    const latest = posts[0]; // First post (newest, already sorted by created_at DESC)
+    
+    const titleEl = document.getElementById('latestBlogTitle');
+    const summaryEl = document.getElementById('latestBlogSummary');
+    const tagEl = document.getElementById('latestBlogTag');
+    const dateEl = document.getElementById('latestBlogDate');
+    const imgEl = document.getElementById('latestBlogImg');
+    const imgWrapEl = document.querySelector('.latest-blog-img-wrap');
+    const btnEl = document.getElementById('latestBlogBtn');
+
+    if (titleEl) titleEl.textContent = latest.title || 'Blog mới';
+    if (summaryEl) summaryEl.textContent = latest.summary || '';
+    if (tagEl) tagEl.textContent = latest.tag || 'Blog';
+    if (dateEl) {
+      const date = new Date(latest.created_at);
+      dateEl.textContent = date.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    if (imgEl) {
+      imgEl.src = latest.img || '';
+      imgEl.style.display = latest.img ? 'block' : 'none';
+      // Store post data for click handler
+      imgEl.dataset.latestPost = JSON.stringify(latest);
+    }
+    // Hide image wrapper if no image
+    if (imgWrapEl) {
+      imgWrapEl.style.display = latest.img ? 'block' : 'none';
+    }
+    // Adjust layout when image is hidden
+    const layoutEl = document.querySelector('.latest-blog-layout');
+    if (layoutEl) {
+      if (latest.img) {
+        layoutEl.style.gridTemplateColumns = '0.65fr 1.35fr';
+      } else {
+        layoutEl.style.gridTemplateColumns = '1fr';
+      }
+    }
+    
+    // Click handler to open blog
+    if (btnEl) {
+      btnEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Find blog page and open latest post
+        const blogLink = document.querySelector('[data-page="blog"]');
+        if (blogLink) {
+          blogLink.click();
+          setTimeout(() => {
+            // Trigger modal to open latest post
+            const event = new CustomEvent('openLatestPost', { detail: latest });
+            window.dispatchEvent(event);
+          }, 300);
+        }
+      });
+    }
+  } catch (err) {
+    console.error('loadLatestBlog:', err);
+  }
+}
+
+async function loadLatestPhotos() {
+  try {
+    const photos = await db.getPhotos();
+    if (photos.length === 0) return; // No photos
+
+    const latest = photos[0]; // First photo (newest, already sorted by created_at DESC)
+    
+    const titleEl = document.getElementById('latestPhotosTitle');
+    const summaryEl = document.getElementById('latestPhotosSummary');
+    const dateEl = document.getElementById('latestPhotosDate');
+    const imgEl = document.getElementById('latestPhotosImg');
+    const imgWrapEl = document.querySelector('.latest-photos-img-wrap');
+    const btnEl = document.getElementById('latestPhotosBtn');
+
+    if (titleEl) titleEl.textContent = latest.caption || 'Hình ảnh mới';
+    if (summaryEl) summaryEl.textContent = latest.location || '';
+    if (dateEl) {
+      const date = new Date(latest.created_at);
+      dateEl.textContent = date.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    if (imgEl) {
+      imgEl.src = latest.img || '';
+      imgEl.style.display = latest.img ? 'block' : 'none';
+      // Store photo data for click handler
+      imgEl.dataset.latestPhoto = JSON.stringify(latest);
+    }
+    // Hide image wrapper if no image
+    if (imgWrapEl) {
+      imgWrapEl.style.display = latest.img ? 'block' : 'none';
+    }
+    // Adjust layout when image is hidden
+    const layoutEl = document.querySelector('.latest-photos-layout');
+    if (layoutEl) {
+      if (latest.img) {
+        layoutEl.style.gridTemplateColumns = '1.35fr 0.65fr';
+      } else {
+        layoutEl.style.gridTemplateColumns = '1fr';
+      }
+    }
+    
+    // Click handler to open photos page
+    if (btnEl) {
+      btnEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Navigate to photos page
+        const photosLink = document.querySelector('[data-page="photos"]');
+        if (photosLink) {
+          photosLink.click();
+        }
+      });
+    }
+  } catch (err) {
+    console.error('loadLatestPhotos:', err);
+  }
+}
+
 /*  Header scroll behaviour  */
 function initHeaderScroll() {
   const header = document.getElementById('siteHeader');
   if (!header) return;
-  let lastY = window.scrollY;
   const onScroll = () => {
     if (document.body.classList.contains('on-subpage')) return;
     const y = window.scrollY;
     header.classList.toggle('scrolled', y > 50);
-    // Hide on scroll down, reveal on scroll up
-    if (y > lastY && y > 80) {
-      header.classList.add('header-hidden');
-    } else {
-      header.classList.remove('header-hidden');
-    }
-    lastY = y;
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -200,7 +341,7 @@ function updateAdminUI() {
             const cover = document.getElementById('heroCover');
             if (cover) cover.style.backgroundImage = `url('${url}')`;
           } catch (err) {
-            alert('Lỗi upload: ' + err.message);
+            showToast('Lỗi upload: ' + err.message);
           } finally {
             icon.className = 'fas fa-camera';
           }
@@ -224,7 +365,7 @@ function updateAdminUI() {
             if (img) { img.src = url; img.classList.add('loaded'); }
             if (placeholder) placeholder.classList.add('hidden');
           } catch (err) {
-            alert('Lỗi upload: ' + err.message);
+            showToast('Lỗi upload: ' + err.message);
           } finally {
             icon.className = 'fas fa-camera';
           }
@@ -242,21 +383,118 @@ function updateAdminUI() {
   }
 }
 
-/*  Contact form (basic)  */
+/*  Contact form with Formspree + Spam Protection  */
 function initContactForm() {
   const form = document.getElementById('contactForm');
   if (!form) return;
-  form.addEventListener('submit', e => {
+  
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const btn = form.querySelector('button[type="submit"]');
     const orig = btn.textContent;
-    btn.textContent = 'Da gui! ';
+    
+    // Get form values
+    const name = form.querySelector('input[name="name"]').value.trim();
+    const email = form.querySelector('input[name="email"]').value.trim();
+    const message = form.querySelector('textarea[name="message"]').value.trim();
+    
+    // ── Validation với Toast Messages ──
+    
+    // Check name
+    if (!name) {
+      showToast('❌ Vui lòng nhập tên của bạn');
+      return;
+    }
+    
+    if (name.length < 2) {
+      showToast('❌ Tên phải dài ít nhất 2 ký tự');
+      return;
+    }
+    
+    if (name.length > 100) {
+      showToast('❌ Tên quá dài (tối đa 100 ký tự)');
+      return;
+    }
+    
+    // Check email
+    if (!email) {
+      showToast('❌ Vui lòng nhập email của bạn');
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showToast('❌ Email không hợp lệ. Vui lòng kiểm tra lại');
+      return;
+    }
+    
+    // Check message
+    if (!message) {
+      showToast('❌ Vui lòng nhập tin nhắn cho mình');
+      return;
+    }
+    
+    if (message.length < 5) {
+      showToast('❌ Tin nhắn phải dài ít nhất 5 ký tự');
+      return;
+    }
+    
+    if (message.length > 5000) {
+      showToast('❌ Tin nhắn quá dài (tối đa 5000 ký tự)');
+      return;
+    }
+    
+    // Check for spam keywords
+    const spamKeywords = ['viagra', 'casino', 'lottery', 'prize', 'click here'];
+    const messageLower = message.toLowerCase();
+    if (spamKeywords.some(keyword => messageLower.includes(keyword))) {
+      showToast('❌ Tin nhắn chứa nội dung không hợp lệ');
+      return;
+    }
+    
+    // Rate limiting - không cho gửi quá 3 lần trong 1 phút
+    const lastSubmitTime = localStorage.getItem('lastContactSubmit');
+    const now = Date.now();
+    const submitCount = parseInt(localStorage.getItem('contactSubmitCount') || '0');
+    
+    if (lastSubmitTime && now - parseInt(lastSubmitTime) < 60000) {
+      // Trong 1 phút
+      if (submitCount >= 3) {
+        showToast('⏱️ Bạn đã gửi quá nhiều tin nhắn. Vui lòng chờ 1 phút');
+        return;
+      }
+      localStorage.setItem('contactSubmitCount', (submitCount + 1).toString());
+    } else {
+      // Reset counter sau 1 phút
+      localStorage.setItem('contactSubmitCount', '1');
+    }
+    localStorage.setItem('lastContactSubmit', now.toString());
+    
+    btn.textContent = '⏳ Đang gửi...';
     btn.disabled = true;
-    setTimeout(() => {
+    
+    try {
+      const formData = new FormData(form);
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        showToast('✅ Cảm ơn bạn! Tin nhắn đã được gửi thành công. Mình sẽ trả lời sớm nhất 💌');
+        form.reset();
+      } else {
+        showToast('❌ Có lỗi khi gửi. Vui lòng thử lại sau');
+      }
+    } catch (err) {
+      showToast('❌ Lỗi kết nối: ' + err.message);
+    } finally {
       btn.textContent = orig;
       btn.disabled = false;
-      form.reset();
-    }, 2500);
+    }
   });
 }
 
@@ -382,7 +620,8 @@ async function renderBlogPage(container) {
   html += '<div class="blog-grid">';
   posts.forEach((p, i) => {
     const hasImg = !!p.img;
-    html += `<article class="blog-card" data-id="${p.id}" data-i="${i}" tabindex="0" role="button" aria-label="${p.title || 'Bài viết'}">
+    const postDataAttr = encodeURIComponent(JSON.stringify(p));
+    html += `<article class="blog-card" data-id="${p.id}" data-i="${i}" data-post="${postDataAttr}" tabindex="0" role="button" aria-label="${p.title || 'Bài viết'}">
       <div class="blog-card-img ${hasImg ? '' : 'blog-card-img--placeholder'}">
         ${hasImg ? `<img src="${p.img}" alt="${p.title || ''}" loading="lazy" />` : `<span class="blog-placeholder-icon">✍️</span>`}
       </div>
@@ -420,7 +659,7 @@ async function renderBlogPage(container) {
         try {
           await db.deletePost(parseInt(btn.dataset.id));
           renderSubPage('blog');
-        } catch (err) { alert('Lỗi: ' + err.message); }
+        } catch (err) { showToast('Lỗi: ' + err.message); }
       });
     });
   }
@@ -501,6 +740,7 @@ async function renderPhotosPage(container) {
   lightboxPhotos = photos;
   let html = '';
 
+  html += '<div class="photos-wrapper">';
   if (isAdmin()) {
     html += `<div class="subpage-admin-bar">
       <button class="btn-new-item" id="btnNewPhoto"><i class="fas fa-plus"></i> Thêm ảnh</button>
@@ -509,6 +749,7 @@ async function renderPhotosPage(container) {
 
   if (!photos.length) {
     html += `<div class="empty-state"><i class="fas fa-camera"></i><p>Chưa có hình nào. Hãy quay lại sau nhé!</p></div>`;
+    html += '</div>'; // Close photos-wrapper
     container.innerHTML = html;
     if (isAdmin()) document.getElementById('btnNewPhoto').addEventListener('click', () => openPhotoEditor());
     return;
@@ -527,6 +768,7 @@ async function renderPhotosPage(container) {
     </div>`;
   });
   html += '</div>';
+  html += '</div>'; // Close photos-wrapper
   container.innerHTML = html;
 
   if (isAdmin()) {
@@ -545,7 +787,7 @@ async function renderPhotosPage(container) {
         try {
           await db.deletePhoto(parseInt(btn.dataset.id));
           renderSubPage('photos');
-        } catch (err) { alert('Lỗi: ' + err.message); }
+        } catch (err) { showToast('Lỗi: ' + err.message); }
       });
     });
   }
@@ -732,7 +974,7 @@ function initLightbox() {
       const scroll = document.getElementById('lbScroll');
       if (scroll) scroll.scrollTop = scroll.scrollHeight;
     } catch (err) {
-      alert('Lỗi: ' + err.message);
+      showToast('Lỗi: ' + err.message);
     } finally {
       btn.disabled = false;
       btn.textContent = 'Đăng';
@@ -750,6 +992,7 @@ async function renderPodcastPage(container) {
   const eps = await db.getEpisodes();
   let html = '';
 
+  html += '<div class="podcast-wrapper">';
   if (isAdmin()) {
     html += `<div class="subpage-admin-bar">
       <button class="btn-new-item" id="btnNewEp"><i class="fas fa-plus"></i> Thêm video</button>
@@ -758,6 +1001,7 @@ async function renderPodcastPage(container) {
 
   if (!eps.length) {
     html += `<div class="empty-state"><i class="fas fa-microphone-alt"></i><p>Chưa có tập nào. Hãy quay lại sau nhé!</p></div>`;
+    html += '</div>'; // Close podcast-wrapper
     container.innerHTML = html;
     if (isAdmin()) document.getElementById('btnNewEp').addEventListener('click', () => openPodcastEditor());
     return;
@@ -780,6 +1024,7 @@ async function renderPodcastPage(container) {
     </div>`;
   });
   html += '</div>';
+  html += '</div>'; // Close podcast-wrapper
   container.innerHTML = html;
 
   if (isAdmin()) {
@@ -796,7 +1041,7 @@ async function renderPodcastPage(container) {
         try {
           await db.deleteEpisode(parseInt(btn.dataset.id));
           renderSubPage('podcast');
-        } catch (err) { alert('Lỗi: ' + err.message); }
+        } catch (err) { showToast('Lỗi: ' + err.message); }
       });
     });
   }
@@ -951,7 +1196,7 @@ function initPostEditor() {
   document.getElementById('pf-img-file').addEventListener('change', e => {
     const file = e.target.files[0]; if (!file) return;
     document.getElementById('pf-img-file').value = '';
-    openCropper(file, NaN, blob => {
+    openCropper(file, 16 / 9, blob => {
       pendingPostImgFile = blobToFile(blob, file.name);
       document.getElementById('pf-img').value = '';
       const prev = document.getElementById('pf-img-preview');
@@ -967,7 +1212,7 @@ function initPostEditor() {
   document.getElementById('postEditorSave').addEventListener('click', async () => {
     const id    = parseInt(document.getElementById('pf-id').value);
     const title = document.getElementById('pf-title').value.trim();
-    if (!title) { alert('Vui lòng nhập tiêu đề!'); return; }
+    if (!title) { showToast('Vui lòng nhập tiêu đề!'); return; }
 
     const saveBtn = document.getElementById('postEditorSave');
     saveBtn.disabled = true;
@@ -992,7 +1237,7 @@ function initPostEditor() {
       closeEditor('postEditorOverlay');
       renderSubPage('blog');
     } catch (err) {
-      alert('Lỗi: ' + err.message);
+      showToast('Lỗi: ' + err.message);
     } finally {
       saveBtn.disabled = false;
       saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu bài viết';
@@ -1080,7 +1325,7 @@ function initPhotoEditor() {
     previews.innerHTML = '';
     pendingPhotoImgFiles = [];
     if (files.length === 1) {
-      openCropper(files[0], NaN, blob => {
+      openCropper(files[0], 1, blob => {
         pendingPhotoImgFile = blobToFile(blob, files[0].name);
         pendingPhotoImgFiles = [];
         document.getElementById('ph-img').value = '';
@@ -1211,7 +1456,7 @@ function initPhotoEditor() {
         imgUrl = await db.uploadImage(pendingPhotoImgFile, 'photos');
         pendingPhotoImgFile = null;
       }
-      if (!imgUrl) { alert('Vui lòng chọn ảnh!'); return; }
+      if (!imgUrl) { showToast('Vui lòng chọn ảnh!'); return; }
       const photo = {
         img:      imgUrl,
         caption:  document.getElementById('ph-caption').value.trim(),
@@ -1222,7 +1467,7 @@ function initPhotoEditor() {
       closeEditor('photoEditorOverlay');
       renderSubPage('photos');
     } catch (err) {
-      alert('Lỗi: ' + err.message);
+      showToast('Lỗi: ' + err.message);
     } finally {
       saveBtn.disabled = false;
       saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu ảnh';
@@ -1267,7 +1512,7 @@ function initPodcastEditor() {
     const id    = parseInt(document.getElementById('ep-id').value);
     const title = document.getElementById('ep-title').value.trim();
     const link  = document.getElementById('ep-link').value.trim();
-    if (!title || !link) { alert('Vui lòng nhập tiêu đề và link!'); return; }
+    if (!title || !link) { showToast('Vui lòng nhập tiêu đề và link!'); return; }
 
     const saveBtn = document.getElementById('podcastEditorSave');
     saveBtn.disabled = true;
@@ -1280,7 +1525,7 @@ function initPodcastEditor() {
       closeEditor('podcastEditorOverlay');
       renderSubPage('podcast');
     } catch (err) {
-      alert('Lỗi: ' + err.message);
+      showToast('Lỗi: ' + err.message);
     } finally {
       saveBtn.disabled = false;
       saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu video';
@@ -1294,7 +1539,7 @@ const IMG_VIEWER_EXCLUDE = [
   '#cropOverlay', '#imgViewerOverlay', '#lightboxOverlay',
   '.editor-modal', '.img-viewer-img', '.pf-img-preview',
   '.ph-img-preview', '#epYtThumb', '.intro-avatar', '#articleImg',
-  '.yt-thumb img', '.hero-cover', '.ig-cell'
+  '.yt-thumb img', '.hero-cover', '.ig-cell', '.blog-card-img', '.latest-blog-img', '.latest-photos-img'
 ];
 
 function initImageViewer() {
@@ -1326,6 +1571,38 @@ function initImageViewer() {
     // Skip if no real src
     if (!img.src || img.src === window.location.href) return;
 
+    // Check if it's a latest blog image with stored post data
+    if (img.dataset.latestPost) {
+      try {
+        const post = JSON.parse(img.dataset.latestPost);
+        openArticle(post);
+        return;
+      } catch (e) {
+        console.error('Failed to parse latest post:', e);
+      }
+    }
+
+    // Check if it's a latest photo image
+    if (img.dataset.latestPhoto) {
+      const photosLink = document.querySelector('[data-page="photos"]');
+      if (photosLink) {
+        photosLink.click();
+      }
+      return;
+    }
+
+    // Check if image is inside blog card - open article instead
+    const blogCard = img.closest('.blog-card');
+    if (blogCard && blogCard.dataset.post) {
+      try {
+        const post = JSON.parse(decodeURIComponent(blogCard.dataset.post));
+        openArticle(post);
+        return;
+      } catch (e) {
+        console.error('Failed to parse blog card post:', e);
+      }
+    }
+
     viewImg.src = img.src;
     overlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -1343,6 +1620,24 @@ function initImageViewer() {
   const observer = new MutationObserver(markImages);
   observer.observe(document.body, { childList: true, subtree: true });
   markImages();
+
+  // Handle clicks on blog card images to open articles instead of lightbox
+  document.addEventListener('click', e => {
+    const cardImg = e.target.closest('.blog-card-img');
+    if (!cardImg) return;
+    
+    const blogCard = cardImg.closest('.blog-card');
+    if (blogCard && blogCard.dataset.post) {
+      try {
+        const post = JSON.parse(decodeURIComponent(blogCard.dataset.post));
+        openArticle(post);
+        e.stopPropagation();
+        return;
+      } catch (err) {
+        console.error('Failed to parse blog card post:', err);
+      }
+    }
+  });
 }
 
 /* ── Router init ──────────────────────────────── */
@@ -1568,7 +1863,7 @@ function initIntroEditor() {
       renderIntroRows(rows);
       closeEditor('introEditorOverlay');
     } catch (err) {
-      alert('Lỗi: ' + err.message);
+      showToast('Lỗi: ' + err.message);
     } finally {
       saveBtn.disabled = false;
       saveBtn.innerHTML = '<i class="fas fa-check"></i> Lưu thay đổi';
@@ -1579,6 +1874,8 @@ function initIntroEditor() {
 /*  Init  */
 document.addEventListener('DOMContentLoaded', () => {
   applyStoredContent().catch(err => console.error('applyStoredContent failed:', err));
+  loadLatestBlog().catch(err => console.error('loadLatestBlog failed:', err));
+  loadLatestPhotos().catch(err => console.error('loadLatestPhotos failed:', err));
   updateAdminUI();
   initHeaderScroll();
   initHamburger();
@@ -1594,3 +1891,123 @@ document.addEventListener('DOMContentLoaded', () => {
   initIntroEditor();
   initEmojiPicker();
 });
+
+/*  Edit Contact Modal  */
+(() => {
+  const overlay = document.getElementById('contactEditorOverlay');
+  if (!overlay) return;
+
+  const openBtn = document.getElementById('btnEditContact');
+  const closeBtn = document.getElementById('contactEditorClose');
+  const cancelBtn = document.getElementById('contactEditorCancel');
+  const saveBtn = document.getElementById('contactEditorSave');
+  const addFieldBtn = document.getElementById('ce-add-field');
+
+  // Make custom field card
+  function makeContactFieldCard(label = '', value = '') {
+    const card = document.createElement('div');
+    card.className = 'ie-row-card';
+    card.innerHTML = `
+      <div class="ie-row-fields" style="flex-direction: row; gap: 8px;">
+        <input type="text" class="ie-row-field-input ce-field-label" style="flex: 1;" placeholder="Nhãn (vd: Telegram)" value="${label}" />
+        <input type="text" class="ie-row-field-input ce-field-value" style="flex: 1.5;" placeholder="Giá trị (vd: @username)" value="${value}" />
+      </div>
+      <button type="button" class="ie-row-del-btn" title="Xóa trường"><i class="fas fa-trash-alt"></i></button>
+    `;
+    
+    card.querySelector('.ie-row-del-btn').addEventListener('click', () => card.remove());
+    return card;
+  }
+
+  // Load values into form
+  function loadContactForm() {
+    const emailEl = document.getElementById('contactEmail');
+    const locationEl = document.getElementById('contactLocation');
+    const fbEl = document.getElementById('socialFb');
+    const igEl = document.getElementById('socialIg');
+    const ttkEl = document.getElementById('socialTtk');
+
+    document.getElementById('ce-email').value = emailEl.textContent.replace(/✉️\s*/, '').trim();
+    document.getElementById('ce-location').value = locationEl.textContent.replace(/📍\s*/, '').trim();
+    document.getElementById('ce-fb').value = fbEl.href || '';
+    document.getElementById('ce-ig').value = igEl.href || '';
+    document.getElementById('ce-ttk').value = ttkEl.href || '';
+
+    // Load custom fields
+    const customFields = JSON.parse(localStorage.getItem('contactCustomFields') || '[]');
+    const fieldsList = document.getElementById('ce-fields-list');
+    fieldsList.innerHTML = '';
+    customFields.forEach(field => {
+      fieldsList.appendChild(makeContactFieldCard(field.label, field.value));
+    });
+  }
+
+  // Add field button
+  addFieldBtn.addEventListener('click', () => {
+    const fieldsList = document.getElementById('ce-fields-list');
+    const card = makeContactFieldCard('', '');
+    fieldsList.appendChild(card);
+    card.querySelector('.ce-field-label').focus();
+  });
+
+  // Open editor
+  openBtn.addEventListener('click', () => {
+    loadContactForm();
+    openEditor('contactEditorOverlay');
+  });
+
+  // Close editor
+  closeBtn.addEventListener('click', () => closeEditor('contactEditorOverlay'));
+  cancelBtn.addEventListener('click', () => closeEditor('contactEditorOverlay'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeEditor('contactEditorOverlay'); });
+
+  // Save changes
+  saveBtn.addEventListener('click', async () => {
+    const email = document.getElementById('ce-email').value.trim();
+    const location = document.getElementById('ce-location').value.trim();
+    const fb = document.getElementById('ce-fb').value.trim();
+    const ig = document.getElementById('ce-ig').value.trim();
+    const ttk = document.getElementById('ce-ttk').value.trim();
+
+    if (!email) {
+      showToast('❌ Vui lòng nhập email');
+      return;
+    }
+    if (!location) {
+      showToast('❌ Vui lòng nhập địa chỉ');
+      return;
+    }
+
+    try {
+      // Collect custom fields
+      const customFields = [...document.querySelectorAll('#ce-fields-list .ie-row-card')].map(card => ({
+        label: card.querySelector('.ce-field-label').value.trim(),
+        value: card.querySelector('.ce-field-value').value.trim(),
+      })).filter(f => f.label && f.value);
+
+      // Save to Supabase
+      await db.setConfig('contactEmail', email);
+      await db.setConfig('contactLocation', location);
+      await db.setConfig('socialFb', fb);
+      await db.setConfig('socialIg', ig);
+      await db.setConfig('socialTtk', ttk);
+      await db.setConfig('contactCustomFields', JSON.stringify(customFields));
+
+      // Update display
+      document.getElementById('contactEmail').textContent = '✉️ ' + email;
+      document.getElementById('contactLocation').textContent = '📍 ' + location;
+      document.getElementById('socialFb').href = fb || '#';
+      document.getElementById('socialIg').href = ig || '#';
+      document.getElementById('socialTtk').href = ttk || '#';
+
+      // Save backup to localStorage
+      localStorage.setItem('contactCustomFields', JSON.stringify(customFields));
+
+      showToast('✅ Lưu thông tin thành công!');
+      closeEditor('contactEditorOverlay');
+    } catch (err) {
+      showToast('❌ Lỗi lưu: ' + err.message);
+      console.error('Error saving contact:', err);
+    }
+  });
+})();

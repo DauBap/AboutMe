@@ -168,62 +168,6 @@ async function loadLatestBlog() {
   }
 }
 
-async function loadLatestPhotos() {
-  try {
-    const photos = await db.getPhotos();
-    if (photos.length === 0) return; // No photos
-
-    const latest = photos[0]; // First photo (newest, already sorted by created_at DESC)
-    
-    const titleEl = document.getElementById('latestPhotosTitle');
-    const summaryEl = document.getElementById('latestPhotosSummary');
-    const dateEl = document.getElementById('latestPhotosDate');
-    const imgEl = document.getElementById('latestPhotosImg');
-    const imgWrapEl = document.querySelector('.latest-photos-img-wrap');
-    const btnEl = document.getElementById('latestPhotosBtn');
-
-    if (titleEl) titleEl.textContent = latest.caption || 'Hình ảnh mới';
-    if (summaryEl) summaryEl.textContent = latest.location || '';
-    if (dateEl) {
-      const date = new Date(latest.created_at);
-      dateEl.textContent = date.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    if (imgEl) {
-      imgEl.src = latest.img || '';
-      imgEl.style.display = latest.img ? 'block' : 'none';
-      // Store photo data for click handler
-      imgEl.dataset.latestPhoto = JSON.stringify(latest);
-    }
-    // Hide image wrapper if no image
-    if (imgWrapEl) {
-      imgWrapEl.style.display = latest.img ? 'block' : 'none';
-    }
-    // Adjust layout when image is hidden
-    const layoutEl = document.querySelector('.latest-photos-layout');
-    if (layoutEl) {
-      if (latest.img) {
-        layoutEl.style.gridTemplateColumns = '1.35fr 0.65fr';
-      } else {
-        layoutEl.style.gridTemplateColumns = '1fr';
-      }
-    }
-    
-    // Click handler to open photos page
-    if (btnEl) {
-      btnEl.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Navigate to photos page
-        const photosLink = document.querySelector('[data-page="photos"]');
-        if (photosLink) {
-          photosLink.click();
-        }
-      });
-    }
-  } catch (err) {
-    console.error('loadLatestPhotos:', err);
-  }
-}
-
 /*  Header scroll behaviour  */
 function initHeaderScroll() {
   const header = document.getElementById('siteHeader');
@@ -1881,8 +1825,17 @@ function initIntroEditor() {
 /*  Init  */
 document.addEventListener('DOMContentLoaded', () => {
   applyStoredContent().catch(err => console.error('applyStoredContent failed:', err));
-  loadLatestBlog().catch(err => console.error('loadLatestBlog failed:', err));
-  loadLatestPhotos().catch(err => console.error('loadLatestPhotos failed:', err));
+  // Blog CTA button → navigate to blog page
+  const blogCta = document.getElementById('latestBlogBtn');
+  // Photos CTA button → navigate to photos page
+  const photosCta = document.getElementById('latestPhotosBtn');
+  if (photosCta) {
+    photosCta.addEventListener('click', e => {
+      e.preventDefault();
+      const photosLink = document.querySelector('[data-page="photos"]');
+      if (photosLink) photosLink.click();
+    });
+  }
   updateAdminUI();
   initHeaderScroll();
   initHamburger();

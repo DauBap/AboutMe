@@ -456,10 +456,6 @@ body {
   color: var(--text-muted);
   line-height: 1.6;
   margin-top: 8px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   text-align: justify;
 }
 
@@ -541,10 +537,6 @@ body {
   color: var(--text-muted);
   line-height: 1.6;
   margin-top: 8px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   text-align: justify;
 }
 
@@ -632,6 +624,7 @@ body {
   color: var(--text-muted);
   line-height: 1.8;
   margin-bottom: 0;
+  text-align: justify;
 }
 
 /* Intro name & slogan */
@@ -648,6 +641,7 @@ body {
   color: var(--pink-main);
   margin-bottom: 24px;
   opacity: 0.85;
+  text-align: justify;
 }
 
 /* Info rows */
@@ -5390,6 +5384,7 @@ img.img-clickable { cursor: zoom-in; }
 
   /* Tarot */
   .tarot-layout { grid-template-columns: 1fr; gap: 32px; }
+  .tarot-img-wrap { order: -1; }
   .tarot-title { font-size: 1.3rem; }
 
   /* Intro layout */
@@ -5407,8 +5402,10 @@ img.img-clickable { cursor: zoom-in; }
 
   /* Latest Blog */
   .latest-blog-layout { grid-template-columns: 1fr; gap: 32px; }
+  .latest-blog-img-wrap { order: -1; }
   .latest-blog-content { text-align: left; align-items: flex-start; }
   .latest-blog-title { font-size: 1.6rem; }
+  .section-latest-blog .section-tag { text-align: left !important; }
 
   /* Latest Photos */
   .latest-photos-layout { grid-template-columns: 1fr; gap: 32px; }
@@ -5421,6 +5418,8 @@ img.img-clickable { cursor: zoom-in; }
     gap: 24px;
   }
   .contact-info { min-width: unset; }
+  .section-contact .section-tag,
+  .section-contact .section-title { text-align: left; }
 
   /* Subview */
   .subview-header { padding: 20px 5%; }
@@ -5455,7 +5454,6 @@ img.img-clickable { cursor: zoom-in; }
   .intro-avatar,
   .intro-avatar-placeholder { width: 120px; height: 120px; }
   .intro-fullname { font-size: 1.5rem; text-align: center; }
-  .intro-slogan   { text-align: center; }
   .info-rows      { text-align: left; justify-self: start; }
   .info-row       { text-align: left; }
   .info-label, .info-value { text-align: left; }

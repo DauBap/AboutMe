@@ -1706,6 +1706,8 @@ footer {
 
 .sub-page { padding-top: var(--header-h); min-height: 100vh; }
 
+.sub-main { padding: 48px 5% 80px; width: 100%; box-sizing: border-box; }
+
 .sub-hero {
   padding: 80px 5% 60px;
   text-align: center;
@@ -1780,7 +1782,7 @@ footer {
 
 /* Masonry photos */
 .masonry-grid {
-  columns: 3;
+  columns: 5;
   column-gap: 16px;
 }
 

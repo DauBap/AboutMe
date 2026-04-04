@@ -558,12 +558,18 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="supabase.js"></script>
   <script src="script.js"></script>
-  <!-- oneko.js — cute pixel cat with petting & food (MIT, github.com/adryd325/oneko.js) -->
+  <!-- oneko.js — cute pixel cat with petting, food & poop (MIT, github.com/adryd325/oneko.js) -->
   <style>
     @keyframes nekofooddrop { from { transform: translateY(-16px) scale(0.5); opacity:0 } to { transform: translateY(0) scale(1); opacity:1 } }
     @keyframes nekofoodeat  { to   { transform: scale(0); opacity:0 } }
     @keyframes nekoheart     { 0%  { transform: translateY(0) scale(1); opacity:1 }
                                100%{ transform: translateY(-28px) scale(0.5); opacity:0 } }
+    @keyframes nekopoopdrop  { 0%  { transform: scale(0) rotate(-20deg); opacity:0 }
+                               70% { transform: scale(1.3) rotate(5deg); opacity:1 }
+                               100%{ transform: scale(1) rotate(0deg); opacity:1 } }
+    .neko-poop { cursor: pointer; transition: transform 0.1s; user-select:none; }
+    .neko-poop:hover { transform: scale(1.3); }
+    .neko-poop:active { transform: scale(0.8); }
   </style>
   <script>
   (function oneko() {
@@ -582,7 +588,20 @@
     let nekoPosX=startX, nekoPosY=startY, mousePosX=startX, mousePosY=startY;
     let frameCount=0, idleTime=0, idleAnimation=null, idleAnimationFrame=0;
     let isPetting=false, pettingFrames=0;
-    let food=null; // {el, x, y}
+    let food=null;
+    let foodEaten=0;      // tổng số lần ăn
+    let poopNeed=0;       // tích lũy nhu cầu đi ị
+    let poopTarget=null;  // {x, y} góc mèo đang chạy tới để ị
+    let isPooping=false;  // đang trong animation ị
+    let poopFrames=0;
+
+    const POOP_CORNER_MARGIN = 28;
+    const corners = () => [
+      { x: POOP_CORNER_MARGIN,                    y: POOP_CORNER_MARGIN },
+      { x: window.innerWidth  - POOP_CORNER_MARGIN, y: POOP_CORNER_MARGIN },
+      { x: POOP_CORNER_MARGIN,                    y: window.innerHeight - POOP_CORNER_MARGIN },
+      { x: window.innerWidth  - POOP_CORNER_MARGIN, y: window.innerHeight - POOP_CORNER_MARGIN },
+    ];
 
     const nekoSpeed=10;
     const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};
@@ -596,9 +615,10 @@
       spawnHeart(nekoPosX, nekoPosY);
     });
 
-    // Click elsewhere → drop food
+    // Click elsewhere → drop food (ignore poops)
     document.addEventListener('click', e => {
       if (e.target === nekoEl) return;
+      if (e.target.classList.contains('neko-poop')) return;
       if (e.target.closest && e.target.closest('#articleOverlay, .crop-overlay, .editor-overlay, #loginModal, #adminFloatBar')) return;
       spawnFood(e.clientX, e.clientY);
     });
@@ -615,10 +635,11 @@
       setTimeout(() => h.remove(), 750);
     }
 
+    const foodList = ['🍣','🍱','🐟','🍗','🥩','🍤','🦐','🥛','🧀','🍙','🍚','🐾','🎣','🦴'];
     function spawnFood(x, y) {
       if (food) { food.el.remove(); food=null; }
       const el = document.createElement('div');
-      el.textContent = '🍣';
+      el.textContent = foodList[Math.floor(Math.random()*foodList.length)];
       Object.assign(el.style, {
         position:'fixed', left:(x-12)+'px', top:(y-12)+'px',
         fontSize:'22px', zIndex:2147483646, pointerEvents:'none',
@@ -628,11 +649,44 @@
       food = { el, x, y };
     }
 
+    function spawnPoop(x, y) {
+      const el = document.createElement('div');
+      el.className = 'neko-poop';
+      el.textContent = '💩';
+      Object.assign(el.style, {
+        position:'fixed', left:(x-12)+'px', top:(y-12)+'px',
+        fontSize:'20px', zIndex:2147483645,
+        animation:'nekopoopdrop 0.4s cubic-bezier(.36,.07,.19,.97) forwards'
+      });
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        el.style.transition = 'transform 0.15s, opacity 0.15s';
+        el.style.transform = 'scale(0)';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 160);
+      });
+      document.body.appendChild(el);
+    }
+
+    function triggerPoopRun() {
+      if (poopTarget || isPooping) return;
+      const c = corners();
+      poopTarget = c[Math.floor(Math.random() * c.length)];
+      // cancel current food so mèo ưu tiên đi ị
+      if (food) { food.el.remove(); food=null; }
+    }
+
     function setSprite(name,frame){const s=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=`${s[0]*32}px ${s[1]*32}px`;}
     function resetIdle(){idleAnimation=null;idleAnimationFrame=0;}
 
     function idle(){
       idleTime+=1;
+      // random trigger đi ị khi không có việc gì làm (tỉ lệ cao hơn khi ăn nhiều)
+      const poopChance = Math.max(300, 600 - poopNeed * 40);
+      if (idleTime > 15 && poopNeed > 0 && Math.floor(Math.random() * poopChance) === 0) {
+        triggerPoopRun();
+        return;
+      }
       if(idleTime>10&&Math.floor(Math.random()*200)===0&&idleAnimation==null){
         let a=['sleeping','scratchSelf'];
         if(nekoPosX<32)a.push('scratchWallW');if(nekoPosY<32)a.push('scratchWallN');
@@ -650,12 +704,46 @@
     function frame(){
       frameCount+=1;
 
-      // Petting state — freeze & play scratchSelf + hearts
+      // Petting state — blink eyes contentedly (idle ↔ sleeping)
       if (isPetting) {
-        setSprite('scratchSelf', frameCount);
+        if (pettingFrames % 3 === 0) setSprite('sleeping', 0);
+        else setSprite('idle', 0);
         if (frameCount % 8 === 0) spawnHeart(nekoPosX, nekoPosY);
         pettingFrames--;
         if (pettingFrames <= 0) { isPetting=false; idleTime=0; }
+        return;
+      }
+
+      // Pooping animation — giơ chân lên, giữ nguyên vài giây rồi thả 💩
+      if (isPooping) {
+        setSprite('scratchSelf', 1); // frame 1 = [-6,0], chân đưa lên cao nhất
+        poopFrames--;
+        if (poopFrames <= 0) {
+          isPooping = false;
+          spawnPoop(nekoPosX + 16, nekoPosY + 8);
+          poopNeed = Math.max(0, poopNeed - 1);
+          idleTime = 0;
+        }
+        return;
+      }
+
+      // Running to poop corner
+      if (poopTarget) {
+        const dX=nekoPosX-poopTarget.x, dY=nekoPosY-poopTarget.y;
+        const dist=Math.sqrt(dX**2+dY**2);
+        if (dist < 20) {
+          poopTarget = null;
+          isPooping = true;
+          poopFrames = 18 + Math.floor(Math.random() * 12);
+          return;
+        }
+        idleAnimation=null; idleAnimationFrame=0;
+        let dir=dY/dist>0.5?'N':'';dir+=dY/dist<-0.5?'S':'';dir+=dX/dist>0.5?'W':'';dir+=dX/dist<-0.5?'E':'';
+        setSprite(dir, frameCount);
+        nekoPosX-=(dX/dist)*nekoSpeed; nekoPosY-=(dY/dist)*nekoSpeed;
+        nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);
+        nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);
+        nekoEl.style.left=`${nekoPosX-16}px`; nekoEl.style.top=`${nekoPosY-16}px`;
         return;
       }
 
@@ -665,17 +753,33 @@
       const dX=nekoPosX-targetX, dY=nekoPosY-targetY;
       const dist=Math.sqrt(dX**2+dY**2);
 
-      // Reached food → eat it
-      if (food && dist < 24) {
-        food.el.style.animation = 'nekofoodeat 0.2s ease forwards';
-        const deadFood = food.el;
-        setTimeout(() => deadFood.remove(), 220);
-        food=null;
-        idleAnimation='scratchSelf'; idleAnimationFrame=0; idleTime=0;
+      // Eating state — bob head up/down like munching
+      if (food && food.eating) {
+        if (food.eatFrames % 2 === 0) setSprite('tired', 0);
+        else setSprite('idle', 0);
+        food.eatFrames--;
+        if (food.eatFrames <= 0) {
+          food.el.style.animation = 'nekofoodeat 0.2s ease forwards';
+          const deadFood = food.el;
+          setTimeout(() => deadFood.remove(), 220);
+          food = null;
+          foodEaten++;
+          poopNeed = Math.min(poopNeed + 1, 8); // tích nhu cầu ị, tối đa 8
+          idleTime = 0;
+          // ăn quá 3 cái liên tiếp → tăng khả năng ị sớm
+          if (foodEaten % 3 === 0) triggerPoopRun();
+        }
         return;
       }
 
-      if(dist<nekoSpeed||dist<48){idle();return;}
+      // Reached food → start eating
+      if (food && dist < 24) {
+        food.eating = true;
+        food.eatFrames = 8 + Math.floor(Math.random() * 20);
+        return;
+      }
+
+      if(dist<nekoSpeed||(dist<48&&!food)){idle();return;}
       idleAnimation=null;idleAnimationFrame=0;
       if(idleTime>1){setSprite('alert',0);idleTime=Math.min(idleTime,7);idleTime-=1;return;}
       let dir=dY/dist>0.5?'N':'';dir+=dY/dist<-0.5?'S':'';dir+=dX/dist>0.5?'W':'';dir+=dX/dist<-0.5?'E':'';

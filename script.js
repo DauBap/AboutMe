@@ -157,16 +157,10 @@ async function loadLatestBlog() {
     if (btnEl) {
       btnEl.addEventListener('click', (e) => {
         e.preventDefault();
-        // Find blog page and open latest post
+        // Set flag so renderBlogPage will auto-open latest post after loading
+        window._openLatestPost = latest;
         const blogLink = document.querySelector('[data-page="blog"]');
-        if (blogLink) {
-          blogLink.click();
-          setTimeout(() => {
-            // Trigger modal to open latest post
-            const event = new CustomEvent('openLatestPost', { detail: latest });
-            window.dispatchEvent(event);
-          }, 300);
-        }
+        if (blogLink) blogLink.click();
       });
     }
   } catch (err) {
@@ -374,12 +368,18 @@ function updateAdminUI() {
     }
     const introEditBtn = document.getElementById('introEditBtn');
     if (introEditBtn) introEditBtn.classList.remove('hidden');
+    
+    const contactEditBtn = document.getElementById('btnEditContact');
+    if (contactEditBtn) contactEditBtn.classList.remove('hidden');
   } else {
     if (bar) bar.remove();
     if (coverBtn)  coverBtn.classList.remove('visible');
     if (avatarBtn) avatarBtn.classList.remove('visible');
     const introEditBtn = document.getElementById('introEditBtn');
     if (introEditBtn) introEditBtn.classList.add('hidden');
+    
+    const contactEditBtn = document.getElementById('btnEditContact');
+    if (contactEditBtn) contactEditBtn.classList.add('hidden');
   }
 }
 
@@ -679,6 +679,13 @@ async function renderBlogPage(container) {
       openArticle(posts.find(p => p.id === id));
     }
   });
+
+  // Auto-open latest post if navigated from homepage "Đọc tiếp" button
+  if (window._openLatestPost) {
+    const toOpen = window._openLatestPost;
+    window._openLatestPost = null;
+    openArticle(toOpen);
+  }
 }
 
 function openArticle(post) {

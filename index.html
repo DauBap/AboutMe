@@ -185,7 +185,7 @@
                 <a href="#" id="socialTtk" data-field="socialTtk" class="soc-btn"><i class="fab fa-tiktok"></i></a>
               </div>
             </div>
-            <button id="btnEditContact" class="intro-edit-btn" title="Chỉnh sửa thông tin">
+            <button id="btnEditContact" class="intro-edit-btn hidden" title="Chỉnh sửa thông tin">
               <i class="fas fa-pen"></i>
             </button>
           </div>
@@ -558,5 +558,138 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="supabase.js"></script>
   <script src="script.js"></script>
+  <!-- oneko.js — cute pixel cat with petting & food (MIT, github.com/adryd325/oneko.js) -->
+  <style>
+    @keyframes nekofooddrop { from { transform: translateY(-16px) scale(0.5); opacity:0 } to { transform: translateY(0) scale(1); opacity:1 } }
+    @keyframes nekofoodeat  { to   { transform: scale(0); opacity:0 } }
+    @keyframes nekoheart     { 0%  { transform: translateY(0) scale(1); opacity:1 }
+                               100%{ transform: translateY(-28px) scale(0.5); opacity:0 } }
+  </style>
+  <script>
+  (function oneko() {
+    const nekoEl = document.createElement('div');
+    nekoEl.id = 'oneko';
+    const startX = Math.round(window.innerWidth / 2);
+    const startY = Math.round(window.innerHeight / 2);
+    Object.assign(nekoEl.style, {
+      width:'32px', height:'32px', position:'fixed',
+      pointerEvents:'auto', imageRendering:'pixelated', cursor:'pointer',
+      left:(startX-16)+'px', top:(startY-16)+'px', zIndex:2147483647,
+      backgroundImage:'url(https://cdn.jsdelivr.net/gh/adryd325/oneko.js@main/oneko.gif)'
+    });
+    document.body.appendChild(nekoEl);
+
+    let nekoPosX=startX, nekoPosY=startY, mousePosX=startX, mousePosY=startY;
+    let frameCount=0, idleTime=0, idleAnimation=null, idleAnimationFrame=0;
+    let isPetting=false, pettingFrames=0;
+    let food=null; // {el, x, y}
+
+    const nekoSpeed=10;
+    const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};
+
+    document.addEventListener('mousemove', e => { mousePosX=e.clientX; mousePosY=e.clientY; });
+
+    // Click on cat → pet it
+    nekoEl.addEventListener('click', e => {
+      e.stopPropagation();
+      isPetting=true; pettingFrames=30;
+      spawnHeart(nekoPosX, nekoPosY);
+    });
+
+    // Click elsewhere → drop food
+    document.addEventListener('click', e => {
+      if (e.target === nekoEl) return;
+      if (e.target.closest && e.target.closest('#articleOverlay, .crop-overlay, .editor-overlay, #loginModal, #adminFloatBar')) return;
+      spawnFood(e.clientX, e.clientY);
+    });
+
+    function spawnHeart(x, y) {
+      const h = document.createElement('div');
+      h.textContent = '💕';
+      Object.assign(h.style, {
+        position:'fixed', left:(x-8)+'px', top:(y-24)+'px',
+        fontSize:'18px', zIndex:2147483647, pointerEvents:'none',
+        animation:'nekoheart 0.7s ease forwards'
+      });
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 750);
+    }
+
+    function spawnFood(x, y) {
+      if (food) { food.el.remove(); food=null; }
+      const el = document.createElement('div');
+      el.textContent = '🍣';
+      Object.assign(el.style, {
+        position:'fixed', left:(x-12)+'px', top:(y-12)+'px',
+        fontSize:'22px', zIndex:2147483646, pointerEvents:'none',
+        animation:'nekofooddrop 0.25s ease forwards'
+      });
+      document.body.appendChild(el);
+      food = { el, x, y };
+    }
+
+    function setSprite(name,frame){const s=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=`${s[0]*32}px ${s[1]*32}px`;}
+    function resetIdle(){idleAnimation=null;idleAnimationFrame=0;}
+
+    function idle(){
+      idleTime+=1;
+      if(idleTime>10&&Math.floor(Math.random()*200)===0&&idleAnimation==null){
+        let a=['sleeping','scratchSelf'];
+        if(nekoPosX<32)a.push('scratchWallW');if(nekoPosY<32)a.push('scratchWallN');
+        if(nekoPosX>window.innerWidth-32)a.push('scratchWallE');if(nekoPosY>window.innerHeight-32)a.push('scratchWallS');
+        idleAnimation=a[Math.floor(Math.random()*a.length)];
+      }
+      switch(idleAnimation){
+        case'sleeping':if(idleAnimationFrame<8){setSprite('tired',0);break;}setSprite('sleeping',Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdle();break;
+        case'scratchWallN':case'scratchWallS':case'scratchWallE':case'scratchWallW':case'scratchSelf':setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdle();break;
+        default:setSprite('idle',0);return;
+      }
+      idleAnimationFrame+=1;
+    }
+
+    function frame(){
+      frameCount+=1;
+
+      // Petting state — freeze & play scratchSelf + hearts
+      if (isPetting) {
+        setSprite('scratchSelf', frameCount);
+        if (frameCount % 8 === 0) spawnHeart(nekoPosX, nekoPosY);
+        pettingFrames--;
+        if (pettingFrames <= 0) { isPetting=false; idleTime=0; }
+        return;
+      }
+
+      // Choose target: food takes priority over mouse
+      const targetX = food ? food.x : mousePosX;
+      const targetY = food ? food.y : mousePosY;
+      const dX=nekoPosX-targetX, dY=nekoPosY-targetY;
+      const dist=Math.sqrt(dX**2+dY**2);
+
+      // Reached food → eat it
+      if (food && dist < 24) {
+        food.el.style.animation = 'nekofoodeat 0.2s ease forwards';
+        const deadFood = food.el;
+        setTimeout(() => deadFood.remove(), 220);
+        food=null;
+        idleAnimation='scratchSelf'; idleAnimationFrame=0; idleTime=0;
+        return;
+      }
+
+      if(dist<nekoSpeed||dist<48){idle();return;}
+      idleAnimation=null;idleAnimationFrame=0;
+      if(idleTime>1){setSprite('alert',0);idleTime=Math.min(idleTime,7);idleTime-=1;return;}
+      let dir=dY/dist>0.5?'N':'';dir+=dY/dist<-0.5?'S':'';dir+=dX/dist>0.5?'W':'';dir+=dX/dist<-0.5?'E':'';
+      setSprite(dir,frameCount);
+      nekoPosX-=(dX/dist)*nekoSpeed;nekoPosY-=(dY/dist)*nekoSpeed;
+      nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);
+      nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);
+      nekoEl.style.left=`${nekoPosX-16}px`;nekoEl.style.top=`${nekoPosY-16}px`;
+    }
+
+    let lastTs;
+    function loop(ts){if(!nekoEl.isConnected)return;if(!lastTs)lastTs=ts;if(ts-lastTs>100){lastTs=ts;frame();}window.requestAnimationFrame(loop);}
+    window.requestAnimationFrame(loop);
+  })();
+  </script>
 </body>
 </html>
